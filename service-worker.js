@@ -4,9 +4,7 @@ const APP_SHELL=[
   './index.html',
   './manifest.webmanifest',
   './avfc-logo.jpg',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png'
+  './icon.svg'
 ];
 
 self.addEventListener('install',event=>{
