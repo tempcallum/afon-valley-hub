@@ -1,0 +1,27 @@
+{
+  "name": "Afon Valley FC Club Hub",
+  "short_name": "Afon Valley Hub",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f2f7f3",
+  "theme_color": "#07532f",
+  "description": "Afon Valley FC club hub for fixtures, availability, money and club duties.",
+  "categories": ["sports", "productivity"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
