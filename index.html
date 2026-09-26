@@ -104,19 +104,19 @@ async function teamPicker(mid){
   const formations={
     '4-4-2':[
       {key:'GK',label:'GK',x:50,y:88},{key:'LB',label:'LB',x:17,y:70},{key:'LCB',label:'LCB',x:39,y:73},{key:'RCB',label:'RCB',x:61,y:73},{key:'RB',label:'RB',x:83,y:70},
-      {key:'LM',label:'LM',x:17,y:47},{key:'LCM',label:'LCM',x:39,y:50},{key:'RCM',label:'RCM',x:61,y:50},{key:'RM',label:'RM',x:83,y:47},{key:'LS',label:'ST',x:37,y:24},{key:'RS',label:'ST',x:63,y:24}
+      {key:'LM',label:'LM',x:17,y:47},{key:'LCM',label:'LCM',x:39,y:50},{key:'RCM',label:'RCM',x:61,y:50},{key:'RM',label:'RM',x:83,y:47},{key:'LS',label:'ST',x:37,y:29},{key:'RS',label:'ST',x:63,y:29}
     ],
     '4-3-3':[
       {key:'GK',label:'GK',x:50,y:88},{key:'LB',label:'LB',x:17,y:70},{key:'LCB',label:'LCB',x:39,y:73},{key:'RCB',label:'RCB',x:61,y:73},{key:'RB',label:'RB',x:83,y:70},
-      {key:'LCM',label:'CM',x:29,y:49},{key:'CDM',label:'CM',x:50,y:55},{key:'RCM',label:'CM',x:71,y:49},{key:'LW',label:'LW',x:20,y:25},{key:'ST',label:'ST',x:50,y:24},{key:'RW',label:'RW',x:80,y:25}
+      {key:'LCM',label:'CM',x:29,y:49},{key:'CDM',label:'CM',x:50,y:55},{key:'RCM',label:'CM',x:71,y:49},{key:'LW',label:'LW',x:20,y:29},{key:'ST',label:'ST',x:50,y:29},{key:'RW',label:'RW',x:80,y:29}
     ],
     '4-2-3-1':[
       {key:'GK',label:'GK',x:50,y:88},{key:'LB',label:'LB',x:17,y:70},{key:'LCB',label:'LCB',x:39,y:73},{key:'RCB',label:'RCB',x:61,y:73},{key:'RB',label:'RB',x:83,y:70},
-      {key:'LDM',label:'DM',x:37,y:56},{key:'RDM',label:'DM',x:63,y:56},{key:'LW',label:'LW',x:20,y:37},{key:'CAM',label:'CAM',x:50,y:38},{key:'RW',label:'RW',x:80,y:37},{key:'ST',label:'ST',x:50,y:18}
+      {key:'LDM',label:'DM',x:37,y:56},{key:'RDM',label:'DM',x:63,y:56},{key:'LW',label:'LW',x:20,y:37},{key:'CAM',label:'CAM',x:50,y:38},{key:'RW',label:'RW',x:80,y:37},{key:'ST',label:'ST',x:50,y:27}
     ],
     '3-5-2':[
       {key:'GK',label:'GK',x:50,y:88},{key:'LCB',label:'CB',x:25,y:70},{key:'CB',label:'CB',x:50,y:74},{key:'RCB',label:'CB',x:75,y:70},
-      {key:'LWB',label:'LWB',x:13,y:49},{key:'LCM',label:'CM',x:34,y:50},{key:'CDM',label:'CM',x:50,y:57},{key:'RCM',label:'CM',x:66,y:50},{key:'RWB',label:'RWB',x:87,y:49},{key:'LS',label:'ST',x:37,y:22},{key:'RS',label:'ST',x:63,y:22}
+      {key:'LWB',label:'LWB',x:13,y:49},{key:'LCM',label:'CM',x:34,y:50},{key:'CDM',label:'CM',x:50,y:57},{key:'RCM',label:'CM',x:66,y:50},{key:'RWB',label:'RWB',x:87,y:49},{key:'LS',label:'ST',x:37,y:28},{key:'RS',label:'ST',x:63,y:28}
     ]
   };
   let formation=lu?.formation||'4-4-2',starters={},subs=[],selected=null;
