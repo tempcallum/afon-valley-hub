@@ -1,4 +1,4 @@
-const CACHE='avfc-hub-v7';
+const CACHE='avfc-hub-v8';
 const APP_SHELL=[
   './',
   './index.html',
@@ -33,4 +33,31 @@ self.addEventListener('fetch',event=>{
       })
       .catch(()=>caches.match(event.request).then(cached=>cached || (event.request.mode==='navigate'?caches.match('./index.html'):undefined)))
   );
+});
+
+self.addEventListener('push',event=>{
+  let data={title:'Afon Valley FC',body:'You have a new club notification.',url:'./'};
+  try{data={...data,...event.data.json()}}catch{}
+  event.waitUntil(self.registration.showNotification(data.title,{
+    body:data.body,
+    icon:'avfc-logo.jpg',
+    badge:'avfc-logo.jpg',
+    data:{url:data.url||'./'},
+    tag:'avfc-'+(data.type||'general'),
+    renotify:true
+  }));
+});
+
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  const target=new URL(event.notification.data?.url||'./',self.registration.scope).href;
+  event.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
+    for(const client of list){
+      if('focus' in client){
+        if('navigate' in client) client.navigate(target);
+        return client.focus();
+      }
+    }
+    return self.clients.openWindow?self.clients.openWindow(target):undefined;
+  }));
 });
