@@ -1,4 +1,4 @@
-const CACHE='avfc-hub-v15';
+const CACHE='avfc-hub-v16';
 const APP_SHELL=[
   './',
   './index.html',
