@@ -566,9 +566,11 @@ async function tote(){
     const approved=fd.get('approved')==='on',live=fd.get('live')==='on';
     if(live&&!approved)return alert('Mark SumUp approval as received before switching live Tote payments on.');
     if(live&&!info?.email_ready)return alert('Automatic winner email delivery must be configured before live Tote payments can be enabled.');
+    if(live&&(!String(fd.get('reg')||'').trim()||!String(fd.get('person')||'').trim()||!String(fd.get('address')||'').trim()))return alert('Add the lottery registration number and responsible person name/address before going live.');
     const bonus=String(fd.get('bonusvalue')||'').trim();
     const payload={ticket_price_pence:Math.round(Number(fd.get('price'))*100),pool_size:Number(fd.get('pool')),draw_time:String(fd.get('time'))+':00',club_share_percent:club,jackpot_share_percent:jackpot,weekly_prize_percent:weekly,society_registration_number:String(fd.get('reg')||'').trim()||null,responsible_person_name:String(fd.get('person')||'').trim()||null,responsible_person_address:String(fd.get('address')||'').trim()||null,bonus_prize_label:String(fd.get('bonus')||'').trim()||null,bonus_prize_value_pence:bonus?Math.round(Number(bonus)*100):null,provider_approved:approved,payments_enabled:live,updated_at:new Date().toISOString(),updated_by:user.id};
     if(!(payload.ticket_price_pence>0)||!(payload.pool_size>=50))return alert('Check the ticket price and number pool.');
+    if(payload.ticket_price_pence*payload.pool_size>2000000)return alert('That setup could exceed £20,000 of ticket sales in one draw. Reduce the ticket price or number pool.');
     const {error}=await sb.from('tote_settings').update(payload).eq('id',1);error?alert(error.message):(alert('Tote settings saved. Rule changes apply from the next draw.'),tote());
   };
 }
