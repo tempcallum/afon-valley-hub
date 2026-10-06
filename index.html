@@ -517,7 +517,7 @@ async function loadToteReceipt(token){
     return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment under review</h2><p>We can see a payment status that needs checking, so the Hub has deliberately not issued any Tote numbers yet. The club has been alerted automatically.</p><p class="muted">This safety state prevents a payment from being silently included or excluded incorrectly.</p></div>';
   }
   if(o.status==='late'){
-    return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment completed after entries closed</h2><p>No Tote numbers have been issued. The Hub has flagged the payment to the club for review/refund rather than putting it into the wrong draw.</p><p class="muted">The decision is based on SumUp\\'s recorded transaction time, not when our website received the callback.</p></div>';
+    return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment completed after entries closed</h2><p>No Tote numbers have been issued. The Hub has flagged the payment to the club for review/refund rather than putting it into the wrong draw.</p><p class="muted">The decision is based on SumUp&#39;s recorded transaction time, not when our website received the callback.</p></div>';
   }
   if(o.status!=='paid'){
     return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Entry not completed</h2><p>Status: '+esc(o.status)+'. No Tote numbers have been issued and the entry is not in the draw.</p><button class="btn primary" onclick="location.href=\''+location.pathname+'?tote=club\'">Back to Tote</button></div>';
