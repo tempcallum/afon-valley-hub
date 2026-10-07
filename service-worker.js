@@ -1,7 +1,5 @@
-const CACHE='avfc-hub-v15';
+const CACHE='avfc-hub-v16';
 const APP_SHELL=[
-  './',
-  './index.html',
   './manifest.webmanifest',
   './avfc-logo.jpg',
   './icon.svg'
@@ -23,7 +21,7 @@ self.addEventListener('fetch',event=>{
   if(url.origin!==self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request,event.request.mode==='navigate'?{cache:'no-store'}:undefined)
       .then(response=>{
         if(response && response.ok){
           const copy=response.clone();
