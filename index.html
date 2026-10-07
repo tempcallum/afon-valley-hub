@@ -411,6 +411,39 @@ async function copyText(value,button){
   try{await navigator.clipboard.writeText(value);if(button){const old=button.textContent;button.textContent='Copied';setTimeout(()=>button.textContent=old,1200)}}catch{prompt('Copy this link:',value)}
 }
 function toteLink(ref='club'){return location.origin+location.pathname+'?tote='+encodeURIComponent(ref)}
+function formatSortCode(v){const d=String(v||'').replace(/\D/g,'');return d.length===6?d.slice(0,2)+'-'+d.slice(2,4)+'-'+d.slice(4):String(v||'')}
+async function toteAdminApi(body){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session?.access_token)throw new Error('Please log in again.');
+  return toteApi('tote-bank-admin',{method:'POST',headers:{Authorization:'Bearer '+session.access_token},body:JSON.stringify(body)});
+}
+function renderBankPaymentInstructions(out){
+  const bank=out.bank||{},due=out.payment_due_at?new Date(out.payment_due_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'as soon as possible';
+  const amount=pounds(out.amount||0),token=out.order_token;
+  const all=['Afon Valley FC Tote','Amount: '+amount,'Account name: '+(bank.account_name||''),'Sort code: '+formatSortCode(bank.sort_code),'Account number: '+(bank.account_number||''),'Reference: '+(out.reference||'')].join('\n');
+  history.replaceState(null,'',location.pathname+'?tote=return&order='+encodeURIComponent(token));
+  $('#totePublicContent').innerHTML=
+    '<div class="tote-public-card"><h2>Make your bank transfer</h2><p>Use the details below in your banking app. <strong>Send exactly '+esc(amount)+'</strong> and use the payment reference exactly as shown.</p>'+
+    '<div class="list">'+
+      '<div class="row"><span>Account name</span><strong>'+esc(bank.account_name||'—')+'</strong></div>'+
+      '<div class="row"><span>Sort code</span><strong>'+esc(formatSortCode(bank.sort_code)||'—')+'</strong></div>'+
+      '<div class="row"><span>Account number</span><strong>'+esc(bank.account_number||'—')+'</strong></div>'+
+      '<div class="row"><span>Amount</span><strong>'+esc(amount)+'</strong></div>'+
+      '<div class="row"><span>Reference</span><strong style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">'+esc(out.reference||'—')+'</strong></div>'+
+    '</div>'+
+    '<div class="tote-pending"><strong>No ticket numbers are issued yet.</strong><br>After sending the transfer, tap the button below. The Chair will check Lloyds and the Hub will issue your numbers only after the payment is verified.</div>'+
+    '<p class="muted">Please send the payment and notify the club by '+esc(due)+'. If you pay close to the draw cutoff, the bank receipt time determines whether the entry can be accepted.</p>'+
+    '<div class="tote-receipt-actions"><button id="copyBankDetails" class="btn">Copy all payment details</button><button id="totePaidClaim" class="btn primary">I\'ve paid · notify the club</button></div>'+
+    '<p class="muted" style="font-size:10px">Order reference: '+esc(out.reference||'')+'. Keep this page open until you have notified the club.</p></div>';
+  $('#copyBankDetails').onclick=e=>copyText(all,e.currentTarget);
+  $('#totePaidClaim').onclick=async e=>{
+    const b=e.currentTarget;b.disabled=true;b.textContent='Notifying club…';
+    try{
+      await toteApi('tote-bank-claim',{method:'POST',body:JSON.stringify({order_token:token})});
+      await loadToteReceipt(token);
+    }catch(err){b.disabled=false;b.textContent="I've paid · notify the club";alert(err.message)}
+  };
+}
 async function showPublicTote(){
   $('#login').classList.add('hidden');$('#shell').classList.add('hidden');$('#totePublic').classList.remove('hidden');
   $('#toteBack').onclick=()=>location.href=location.pathname;
@@ -424,7 +457,7 @@ async function showPublicTote(){
   const closeAt=new Date(d.sales_close_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   const referral=info.referral?'<div class="tote-referral-note">This entry link supports '+esc(info.referral.name)+' on the internal Afon Valley sales leaderboard.</div>':'';
   const live=info.payments_live;
-  const pending=!live?'<div class="tote-pending"><strong>Payments are not live yet.</strong><br>The Tote is ready, but real entries stay locked until SumUp approval and automatic winner-email delivery are both configured.</div>':'';
+  const pending=!live?'<div class="tote-pending"><strong>Entries are not live yet.</strong><br>The direct Lloyds bank-transfer system is built, but real entries stay locked until the lottery registration, club bank details and automatic ticket-email delivery are all configured.</div>':'<div class="success-note"><strong>Direct bank transfer.</strong> Your ticket numbers are issued only after Afon Valley FC verifies the payment in Lloyds.</div>';
   const history=(info.history||[]).map(h=>'<div class="tote-result"><div><strong>Draw '+h.draw_number+'</strong><br><small class="muted">'+day(h.draw_at)+'</small></div><b>'+(h.jackpot_won?'Jackpot won · '+pounds(h.jackpot_prize):'Rolled over · '+pounds(h.rollover))+(h.weekly_winner?'<br><small>Weekly: '+esc(h.weekly_winner)+' · '+pounds(h.weekly_prize)+'</small>':'')+'</b></div>').join('');
   $('#totePublicContent').innerHTML=
     '<div class="tote-jackpot"><span>CURRENT ROLLOVER JACKPOT</span><strong>'+pounds(d.current_jackpot)+'</strong><small>Draw '+d.draw_number+' · '+drawAt+'</small></div>'+
@@ -434,20 +467,20 @@ async function showPublicTote(){
     '</div>'+
     '<div class="tote-public-card"><h3>Enter this draw</h3>'+pending+
       '<div class="tote-entry-options"><button class="tote-option active" data-tote-count="1">1 entry<br><small>'+pounds(info.ticket_price)+'</small></button><button class="tote-option" data-tote-count="5">5 entries<br><small>'+pounds(info.ticket_price*5)+'</small></button><button class="tote-option" data-tote-count="10">10 entries<br><small>'+pounds(info.ticket_price*10)+'</small></button><button class="tote-option" data-tote-count="20">20 entries<br><small>'+pounds(info.ticket_price*20)+'</small></button></div>'+
-      '<form id="publicToteForm" class="form"><div class="tote-form-grid"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input name="email" type="email" autocomplete="email" required></label></div><label>Mobile (optional)<input name="mobile" inputmode="tel" autocomplete="tel"></label><label class="tote-terms"><input name="age" type="checkbox" required><span>I confirm I am aged 16 or over and agree that my entry is subject to the Afon Valley Tote rules.</span></label><button class="btn primary tote-enter-btn" '+(live?'':'disabled')+'>Pay with SumUp · '+pounds(info.ticket_price)+'</button></form>'+
+      '<form id="publicToteForm" class="form"><div class="tote-form-grid"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input name="email" type="email" autocomplete="email" required></label></div><label>Mobile (optional)<input name="mobile" inputmode="tel" autocomplete="tel"></label><label class="tote-terms"><input name="age" type="checkbox" required><span>I confirm I am aged 16 or over and agree that my entry is subject to the Afon Valley Tote rules.</span></label><button class="btn primary tote-enter-btn" '+(live?'':'disabled')+'>Get bank payment details · '+pounds(info.ticket_price)+'</button></form>'+
       (info.registration_number?'<p class="muted" style="font-size:10px">Small Society Lottery registration: '+esc(info.registration_number)+'.</p>':'')+
     '</div>'+
     '<div class="tote-public-card"><h3>Recent draws</h3>'+(history||'<div class="empty">No completed draws yet.</div>')+'</div>';
   let selected=1;
-  const update=()=>{document.querySelectorAll('[data-tote-count]').forEach(b=>b.classList.toggle('active',Number(b.dataset.toteCount)===selected));const btn=$('#publicToteForm button[type="submit"]');if(btn)btn.textContent='Pay with SumUp · '+pounds(info.ticket_price*selected)};
+  const update=()=>{document.querySelectorAll('[data-tote-count]').forEach(b=>b.classList.toggle('active',Number(b.dataset.toteCount)===selected));const btn=$('#publicToteForm button[type="submit"]');if(btn)btn.textContent='Get bank payment details · '+pounds(info.ticket_price*selected)};
   document.querySelectorAll('[data-tote-count]').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.toteCount);update()});
   $('#publicToteForm').onsubmit=async e=>{
     e.preventDefault();if(!live)return;
     const fd=new FormData(e.target),btn=e.target.querySelector('button[type="submit"]');
-    btn.disabled=true;btn.textContent='Opening SumUp…';
+    btn.disabled=true;btn.textContent='Preparing payment…';
     try{
-      const out=await toteApi('create-tote-checkout',{method:'POST',body:JSON.stringify({name:fd.get('name'),email:fd.get('email'),mobile:fd.get('mobile'),age_confirmed:fd.get('age')==='on',ticket_count:selected,ref:ref})});
-      location.href=out.url;
+      const out=await toteApi('create-tote-bank-order',{method:'POST',body:JSON.stringify({name:fd.get('name'),email:fd.get('email'),mobile:fd.get('mobile'),age_confirmed:fd.get('age')==='on',ticket_count:selected,ref:ref})});
+      renderBankPaymentInstructions(out);
     }catch(err){btn.disabled=false;update();alert(err.message)}
   };
 }
@@ -528,15 +561,29 @@ function showToteReceiptPreview(){
 async function loadToteReceipt(token){
   let info;try{info=await toteApi('tote-public?token='+encodeURIComponent(token))}catch(e){return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Entry not found</h2><p>'+esc(e.message)+'</p></div>'}
   const o=info.order;
+  if(o.status==='awaiting_payment'){
+    return renderBankPaymentInstructions({order_token:token,amount:o.amount,reference:o.checkout_reference,payment_due_at:o.payment_due_at,sales_close_at:info.draw?.sales_close_at,draw_number:info.draw?.draw_number,bank:info.bank||{}});
+  }
+  if(o.status==='payment_claimed'){
+    $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment sent for verification</h2><p>The club has been notified. No numbers are issued until the Chair checks the payment in Lloyds.</p><div class="success-note"><strong>'+esc(o.checkout_reference)+'</strong> · '+pounds(o.amount)+'</div><p class="muted">You can leave this page. Once the payment is confirmed, your ticket numbers will be emailed automatically to '+esc(o.buyer_email)+'. This page will also update when verification is complete.</p></div>';
+    setTimeout(()=>loadToteReceipt(token),5000);return;
+  }
   if(o.status==='pending'){
-    $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Confirming your payment…</h2><p>We are checking the payment directly with SumUp. No entry numbers are issued until SumUp verifies the payment and confirms it completed before the published cutoff.</p></div>';
-    setTimeout(()=>loadToteReceipt(token),2500);return;
+    $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Checking payment…</h2><p>This is an older payment order that is still being reconciled. No entry numbers have been issued yet.</p></div>';
+    setTimeout(()=>loadToteReceipt(token),5000);return;
   }
   if(o.status==='review'){
-    return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment under review</h2><p>We can see a payment status that needs checking, so the Hub has deliberately not issued any Tote numbers yet. The club has been alerted automatically.</p><p class="muted">This safety state prevents a payment from being silently included or excluded incorrectly.</p></div>';
+    return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment needs manual review</h2><p>The Hub has deliberately stopped this entry because something does not match, such as the amount, timing or draw status.</p><p class="muted">No ticket numbers have been issued. Afon Valley FC will check the payment before deciding whether it can be accepted or needs to be refunded.</p></div>';
   }
   if(o.status==='late'){
-    return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment completed after entries closed</h2><p>No Tote numbers have been issued. The Hub has flagged the payment to the club for review/refund rather than putting it into the wrong draw.</p><p class="muted">The decision is based on SumUp&#39;s recorded transaction time, not when our website received the callback.</p></div>';
+    return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment arrived after entries closed</h2><p>No Tote numbers have been issued. The payment has been flagged for review/refund rather than being entered into the wrong draw.</p></div>';
+  }
+  if(o.status==='expired'){
+    $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment window expired</h2><p>This order stopped reserving numbers because the payment was not reported in time.</p><p>If you <strong>already sent the bank transfer before the sales cutoff</strong>, you can still notify the club and it will be checked manually. Acceptance depends on the actual Lloyds receipt time and numbers still being available.</p><button id="expiredPaidClaim" class="btn primary">I already paid · notify the club</button></div>';
+    $('#expiredPaidClaim').onclick=async e=>{const b=e.currentTarget;b.disabled=true;try{await toteApi('tote-bank-claim',{method:'POST',body:JSON.stringify({order_token:token})});loadToteReceipt(token)}catch(err){b.disabled=false;alert(err.message)}};return;
+  }
+  if(o.status==='rejected'){
+    return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment could not be verified</h2><p>The club could not find a matching bank payment for this order, so no Tote numbers were issued.</p><p class="muted">If you believe you did pay, contact Afon Valley FC and quote '+esc(o.checkout_reference)+'.</p></div>';
   }
   if(o.status!=='paid'){
     return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Entry not completed</h2><p>Status: '+esc(o.status)+'. No Tote numbers have been issued and the entry is not in the draw.</p><button class="btn primary" onclick="location.href=\''+location.pathname+'?tote=club\'">Back to Tote</button></div>';
@@ -550,48 +597,78 @@ async function tote(){
     sb.rpc('get_tote_leaderboard'),
     myPlayer?sb.from('tote_player_referrals').select('*').eq('player_id',myPlayer).maybeSingle():Promise.resolve({data:null})
   ]);
-  const d=info?.current_draw;
-  const canAdmin=!isPlayerView()&&['chair','treasurer'].includes(profile.role);
-  const isChair=!isPlayerView()&&profile.role==='chair';
+  const d=info?.current_draw,isChair=true;
   let settings=null,payouts=[],alerts=[],orders=[],drawHistory=[];
-  if(canAdmin){
-    const [sr,pr,ar,or,dr]=await Promise.all([
-      sb.from('tote_settings').select('*').eq('id',1).maybeSingle(),
-      sb.from('tote_payouts').select('*,tote_draws(draw_number)').order('created_at',{ascending:false}).limit(30),
-      sb.from('tote_system_alerts').select('*').is('resolved_at',null).order('created_at',{ascending:false}),
-      sb.from('tote_orders').select('id,status,ticket_count,amount_pence,source,referral_counted,buyer_name,created_at').order('created_at',{ascending:false}).limit(25),
-      sb.from('tote_draws').select('draw_number,draw_at,sales_pence,club_share_pence,weekly_prize_pence,jackpot_added_pence,jackpot_total_pence,rollover_out_pence,jackpot_number,jackpot_winning_ticket_id').eq('status','drawn').order('draw_at',{ascending:false}).limit(52)
-    ]);
-    settings=sr.data;payouts=pr.data||[];alerts=ar.data||[];orders=or.data||[];drawHistory=dr.data||[];
-  }
+  const [sr,pr,ar,or,dr]=await Promise.all([
+    sb.from('tote_settings').select('*').eq('id',1).maybeSingle(),
+    sb.from('tote_payouts').select('*,tote_draws(draw_number)').order('created_at',{ascending:false}).limit(30),
+    sb.from('tote_system_alerts').select('*').is('resolved_at',null).order('created_at',{ascending:false}),
+    sb.from('tote_orders').select('id,status,ticket_count,amount_pence,source,referral_counted,buyer_name,buyer_email,checkout_reference,created_at,claimed_paid_at,payment_due_at,received_amount_pence,review_reason,payment_provider,tote_draws(draw_number,draw_at,sales_close_at)').order('created_at',{ascending:false}).limit(50),
+    sb.from('tote_draws').select('draw_number,draw_at,sales_pence,club_share_pence,weekly_prize_pence,jackpot_added_pence,jackpot_total_pence,rollover_out_pence,jackpot_number,jackpot_winning_ticket_id').eq('status','drawn').order('draw_at',{ascending:false}).limit(52)
+  ]);
+  settings=sr.data;payouts=pr.data||[];alerts=ar.data||[];orders=or.data||[];drawHistory=dr.data||[];
   const myLink=referral?.code?toteLink(referral.code):null,clubLink=toteLink('club');
   const rows=(board||[]).map((x,i)=>'<div class="tote-board-row"><span class="rank">'+(i+1)+'</span><strong>'+esc(x.player_name)+'</strong><span>'+x.current_draw_tickets+'</span><span>'+x.month_tickets+'</span><span>'+x.season_tickets+'</span></div>').join('');
+  const bankChecks=orders.filter(o=>o.payment_provider==='bank_transfer'&&['payment_claimed','review','awaiting_payment'].includes(o.status));
+  const nowLocal=localDateTime(new Date());
+  const bankChecksHtml=bankChecks.length?bankChecks.map(o=>{
+    const claimed=o.claimed_paid_at?new Date(o.claimed_paid_at).toLocaleString('en-GB'):'Not yet';
+    const reason=o.review_reason?'<div class="tote-alert warning"><strong>Review reason: '+esc(o.review_reason.replaceAll('_',' '))+'</strong></div>':'';
+    return '<div class="panel" style="margin:10px 0"><div class="head"><div><strong>'+esc(o.buyer_name)+' · '+pounds(o.amount_pence/100)+'</strong><p class="muted">'+esc(o.buyer_email)+' · '+o.ticket_count+' entries · Draw '+esc(o.tote_draws?.draw_number||'')+'</p></div><span class="badge '+(o.status==='payment_claimed'?'warn':o.status==='review'?'bad':'')+'">'+esc(o.status.replaceAll('_',' ').toUpperCase())+'</span></div>'+reason+
+      '<div class="list"><div class="row"><span>Bank reference</span><strong style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">'+esc(o.checkout_reference)+'</strong></div><div class="row"><span>Expected</span><strong>'+pounds(o.amount_pence/100)+'</strong></div><div class="row"><span>Buyer pressed “I\'ve paid”</span><strong>'+esc(claimed)+'</strong></div><div class="row"><span>Sales cutoff</span><strong>'+esc(o.tote_draws?.sales_close_at?new Date(o.tote_draws.sales_close_at).toLocaleString('en-GB'):'—')+'</strong></div></div>'+
+      '<div class="form-grid"><label>Amount actually received £<input data-bank-amount="'+o.id+'" inputmode="decimal" value="'+(o.amount_pence/100).toFixed(2)+'"></label><label>Time shown in Lloyds<input data-bank-time="'+o.id+'" type="datetime-local" value="'+nowLocal+'"></label></div>'+
+      '<label class="tote-terms"><input data-bank-checked="'+o.id+'" type="checkbox"><span>I have personally checked Lloyds and matched this payment to the amount/reference above.</span></label>'+
+      '<div class="tote-receipt-actions"><button class="btn primary" data-bank-confirm="'+o.id+'">Confirm payment & issue tickets</button><button class="btn" data-bank-reject="'+o.id+'">No matching payment found</button></div></div>';
+  }).join(''):'<div class="success-note">No bank payments are waiting for your check.</div>';
+
   $('#content').innerHTML=
     '<div class="tote-internal-hero"><div><span class="eyebrow">AFON VALLEY TOTE</span><div class="big">'+pounds(d?.current_jackpot||0)+'</div><p>Current rollover jackpot'+(d?' · draw '+d.draw_number+' on '+new Date(d.draw_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'')+'</p></div><div class="tote-mini-stats"><div><span>ENTRIES</span><strong>'+(d?.sold_tickets||0)+'</strong></div><div><span>WEEKLY</span><strong>'+pounds(d?.weekly_prize||0)+'</strong></div><div><span>POOL</span><strong>'+(info?.pool_size||'—')+'</strong></div></div></div>'+
+    '<div class="panel"><span class="eyebrow dark">BANK PAYMENT CHECKS</span><h3>Payments waiting for verification</h3><p class="muted">A buyer pressing “I\'ve paid” only alerts you. Tickets are created only after you check the Lloyds account and confirm the exact payment here.</p>'+bankChecksHtml+'</div>'+
     (myLink?'<div class="panel"><div class="head"><div><span class="eyebrow dark">MY TOTE SALES</span><h3>Your referral link & QR</h3><p class="muted">Sales through these count towards the internal leaderboard. Your own purchases do not count towards your sales total.</p></div></div><div class="tote-share-box"><div><div class="tote-share-link">'+esc(myLink)+'</div></div><button id="copyMyTote" class="btn primary">Copy link</button></div><div id="myToteQr" class="tote-qr"></div></div>':'')+
-    ((profile.role==='chair'||profile.role==='social')&&!isPlayerView()?'<div class="panel"><div class="head"><div><span class="eyebrow dark">CLUB DIRECT</span><h3>Social / main club link</h3><p class="muted">Sales through this link do not credit any player on the leaderboard.</p></div></div><div class="tote-share-box"><div class="tote-share-link">'+esc(clubLink)+'</div><button id="copyClubTote" class="btn primary">Copy link</button></div><div id="clubToteQr" class="tote-qr"></div></div>':'')+
+    '<div class="panel"><div class="head"><div><span class="eyebrow dark">CLUB DIRECT</span><h3>Social / main club link</h3><p class="muted">Sales through this link do not credit any player on the leaderboard.</p></div></div><div class="tote-share-box"><div class="tote-share-link">'+esc(clubLink)+'</div><button id="copyClubTote" class="btn primary">Copy link</button></div><div id="clubToteQr" class="tote-qr"></div></div>'+
     '<div class="panel"><div class="head"><div><span class="eyebrow dark">INTERNAL LEADERBOARD</span><h3>Tote sales</h3></div></div><div class="tote-board-row tote-board-head"><span>#</span><span>Player</span><span>This draw</span><span>Month</span><span>Season</span></div>'+(rows||'<div class="empty">No referred sales yet.</div>')+'</div>'+
-    (canAdmin?'<div class="tote-admin-grid"><div class="panel"><span class="eyebrow dark">PAYOUTS</span><h3>Winner payments</h3>'+(payouts.length?payouts.map(p=>'<div class="tote-payout"><div><strong>'+esc(p.winner_name)+' · '+pounds(Number(p.amount_pence)/100)+'</strong><small>Draw '+esc(p.tote_draws?.draw_number||'')+' · '+esc(p.prize_type)+' · '+esc(p.status)+'</small></div>'+(p.status==='due'?'<button class="btn primary" data-tote-pay="'+p.id+'">Mark paid</button>':'<span class="badge ok">PAID</span>')+'</div>').join(''):'<div class="empty">No payouts yet.</div>')+'</div><div class="panel"><span class="eyebrow dark">AUTOMATION HEALTH</span><h3>Failures needing attention</h3>'+(alerts.length?alerts.map(a=>'<div class="tote-alert '+esc(a.severity)+'"><strong>'+esc(a.message)+'</strong><small>'+new Date(a.created_at).toLocaleString('en-GB')+'</small>'+(isChair?'<button class="btn mini-action" data-tote-alert="'+a.id+'">Resolve</button>':'')+'</div>').join(''):'<div class="success-note">No unresolved Tote failures.</div>')+'</div></div>':'')+
-    (isChair&&settings?'<div class="panel"><span class="eyebrow dark">TOTE SETTINGS</span><h3>Rules & payment switch</h3><div class="tote-settings-note">The current draw keeps the rules it opened with. Rule changes apply to the next draw. Live entries require both written SumUp approval and working automatic winner-email delivery.<br><br><strong>Winner email delivery: '+(info?.email_ready?'READY':'NOT CONFIGURED')+'</strong><br><br><a class="btn" href="?tote=preview" target="_blank" rel="noopener">Preview confirmation ticket</a></div><form id="toteSettingsForm" class="form"><div class="form-grid"><label>Ticket price £<input name="price" inputmode="decimal" value="'+(settings.ticket_price_pence/100).toFixed(2)+'"></label><label>Number pool<input name="pool" type="number" min="50" value="'+settings.pool_size+'"></label><label>Draw time<input name="time" type="time" value="'+String(settings.draw_time).slice(0,5)+'"></label><label>Club %<input name="club" type="number" min="20" max="100" value="'+settings.club_share_percent+'"></label><label>Jackpot %<input name="jackpot" type="number" min="0" max="80" value="'+settings.jackpot_share_percent+'"></label><label>Weekly winner %<input name="weekly" type="number" min="0" max="80" value="'+settings.weekly_prize_percent+'"></label></div><label>Small Society Lottery registration number<input name="reg" value="'+esc(settings.society_registration_number||'')+'"></label><label>Responsible person<input name="person" value="'+esc(settings.responsible_person_name||'')+'"></label><label>Responsible person address<textarea name="address">'+esc(settings.responsible_person_address||'')+'</textarea></label><div class="form-grid"><label>Optional bonus prize<input name="bonus" value="'+esc(settings.bonus_prize_label||'')+'"></label><label>Bonus prize value £<input name="bonusvalue" inputmode="decimal" value="'+(settings.bonus_prize_value_pence!=null?(settings.bonus_prize_value_pence/100).toFixed(2):'')+'"></label></div><label class="tote-terms"><input name="approved" type="checkbox" '+(settings.provider_approved?'checked':'')+'><span>SumUp has approved this Tote / lottery use in writing.</span></label><label class="tote-terms"><input name="live" type="checkbox" '+(settings.payments_enabled?'checked':'')+'><span>Accept live Tote payments.</span></label><button class="btn primary">Save Tote settings</button></form></div>':'')+
-    (canAdmin?'<div class="panel"><div class="head"><div><span class="eyebrow dark">LOTTERY RETURNS</span><h3>Draw finance history</h3><p class="muted">The Hub keeps the figures needed to prepare the local-authority return for each completed draw.</p></div><button id="downloadToteReturns" class="btn">Download CSV</button></div><div class="list">'+(drawHistory.length?drawHistory.slice(0,12).map(h=>'<div class="row"><span><strong>Draw '+h.draw_number+' · '+day(h.draw_at)+'</strong><br><small class="muted">Sales '+cash(h.sales_pence)+' · Weekly prize '+cash(h.weekly_prize_pence)+' · Jackpot added '+cash(h.jackpot_added_pence)+'</small></span><strong>'+cash(h.club_share_pence)+' to club</strong></div>').join(''):'<div class="empty">No completed draws yet.</div>')+'</div></div>':'')+
-    (canAdmin?'<div class="panel"><span class="eyebrow dark">RECENT ENTRIES</span><h3>Payment status</h3><div class="list">'+(orders.length?orders.map(o=>'<div class="row"><span><strong>'+esc(o.buyer_name)+'</strong><br><small class="muted">'+o.ticket_count+' entries · '+esc(o.source)+' · '+new Date(o.created_at).toLocaleString('en-GB')+'</small></span><span class="badge '+(o.status==='paid'?'ok':o.status==='pending'?'warn':'bad')+'">'+esc(o.status.toUpperCase())+'</span></div>').join(''):'<div class="empty">No Tote orders yet.</div>')+'</div></div>':'');
+    '<div class="tote-admin-grid"><div class="panel"><span class="eyebrow dark">PAYOUTS</span><h3>Winner payments</h3>'+(payouts.length?payouts.map(p=>'<div class="tote-payout"><div><strong>'+esc(p.winner_name)+' · '+pounds(Number(p.amount_pence)/100)+'</strong><small>Draw '+esc(p.tote_draws?.draw_number||'')+' · '+esc(p.prize_type)+' · '+esc(p.status)+'</small></div>'+(p.status==='due'?'<button class="btn primary" data-tote-pay="'+p.id+'">Mark paid</button>':'<span class="badge ok">PAID</span>')+'</div>').join(''):'<div class="empty">No payouts yet.</div>')+'</div><div class="panel"><span class="eyebrow dark">AUTOMATION HEALTH</span><h3>Failures needing attention</h3>'+(alerts.length?alerts.map(a=>'<div class="tote-alert '+esc(a.severity)+'"><strong>'+esc(a.message)+'</strong><small>'+new Date(a.created_at).toLocaleString('en-GB')+'</small><button class="btn mini-action" data-tote-alert="'+a.id+'">Resolve</button></div>').join(''):'<div class="success-note">No unresolved Tote failures.</div>')+'</div></div>'+
+    (settings?'<div class="panel"><span class="eyebrow dark">TOTE SETTINGS</span><h3>Rules & direct Lloyds payment</h3><div class="tote-settings-note">Real entries stay locked until the Small Society Lottery registration, bank details and automatic ticket emails are configured. The current draw keeps the rules it opened with; rule changes apply to the next draw.<br><br><strong>Ticket email delivery: '+(info?.email_ready?'READY':'NOT CONFIGURED')+'</strong> · <strong>Bank details: '+(info?.bank_ready?'READY':'NOT CONFIGURED')+'</strong> · <strong>Lottery details: '+(info?.legal_ready?'READY':'NOT CONFIGURED')+'</strong><br><br><a class="btn" href="?tote=preview" target="_blank" rel="noopener">Preview confirmation ticket</a></div><form id="toteSettingsForm" class="form"><div class="form-grid"><label>Ticket price £<input name="price" inputmode="decimal" value="'+(settings.ticket_price_pence/100).toFixed(2)+'"></label><label>Number pool<input name="pool" type="number" min="50" value="'+settings.pool_size+'"></label><label>Draw time<input name="time" type="time" value="'+String(settings.draw_time).slice(0,5)+'"></label><label>Club %<input name="club" type="number" min="20" max="100" value="'+settings.club_share_percent+'"></label><label>Jackpot %<input name="jackpot" type="number" min="0" max="80" value="'+settings.jackpot_share_percent+'"></label><label>Weekly winner %<input name="weekly" type="number" min="0" max="80" value="'+settings.weekly_prize_percent+'"></label></div><h3 style="margin-top:18px">Lloyds receiving account</h3><div class="form-grid"><label>Account name<input name="bankname" value="'+esc(settings.bank_account_name||'Afon Valley FC')+'"></label><label>Sort code<input name="sortcode" inputmode="numeric" placeholder="12-34-56" value="'+esc(settings.bank_sort_code||'')+'"></label><label>Account number<input name="accountno" inputmode="numeric" placeholder="12345678" value="'+esc(settings.bank_account_number||'')+'"></label></div><label>Small Society Lottery registration number<input name="reg" value="'+esc(settings.society_registration_number||'')+'"></label><label>Responsible person<input name="person" value="'+esc(settings.responsible_person_name||'')+'"></label><label>Responsible person address<textarea name="address">'+esc(settings.responsible_person_address||'')+'</textarea></label><div class="form-grid"><label>Optional bonus prize<input name="bonus" value="'+esc(settings.bonus_prize_label||'')+'"></label><label>Bonus prize value £<input name="bonusvalue" inputmode="decimal" value="'+(settings.bonus_prize_value_pence!=null?(settings.bonus_prize_value_pence/100).toFixed(2):'')+'"></label></div><label class="tote-terms"><input name="live" type="checkbox" '+(settings.payments_enabled?'checked':'')+'><span>Accept live Tote bank-transfer entries.</span></label><button class="btn primary">Save Tote settings</button></form></div>':'')+
+    '<div class="panel"><div class="head"><div><span class="eyebrow dark">LOTTERY RETURNS</span><h3>Draw finance history</h3><p class="muted">The Hub keeps the figures needed to prepare the local-authority return for each completed draw.</p></div><button id="downloadToteReturns" class="btn">Download CSV</button></div><div class="list">'+(drawHistory.length?drawHistory.slice(0,12).map(h=>'<div class="row"><span><strong>Draw '+h.draw_number+' · '+day(h.draw_at)+'</strong><br><small class="muted">Sales '+cash(h.sales_pence)+' · Weekly prize '+cash(h.weekly_prize_pence)+' · Jackpot added '+cash(h.jackpot_added_pence)+'</small></span><strong>'+cash(h.club_share_pence)+' to club</strong></div>').join(''):'<div class="empty">No completed draws yet.</div>')+'</div></div>'+
+    '<div class="panel"><span class="eyebrow dark">RECENT ENTRIES</span><h3>Payment status</h3><div class="list">'+(orders.length?orders.map(o=>'<div class="row"><span><strong>'+esc(o.buyer_name)+'</strong><br><small class="muted">'+o.ticket_count+' entries · '+esc(o.checkout_reference||o.source)+' · '+new Date(o.created_at).toLocaleString('en-GB')+'</small></span><span class="badge '+(o.status==='paid'?'ok':['awaiting_payment','payment_claimed','pending'].includes(o.status)?'warn':'bad')+'">'+esc(o.status.replaceAll('_',' ').toUpperCase())+'</span></div>').join(''):'<div class="empty">No Tote orders yet.</div>')+'</div></div>';
+
   if(myLink){$('#copyMyTote').onclick=e=>copyText(myLink,e.currentTarget);renderQr($('#myToteQr'),myLink)}
   if($('#copyClubTote')){$('#copyClubTote').onclick=e=>copyText(clubLink,e.currentTarget);renderQr($('#clubToteQr'),clubLink)}
+  $('#content').querySelectorAll('[data-bank-confirm]').forEach(b=>b.onclick=async()=>{
+    const id=b.dataset.bankConfirm,amountEl=$('[data-bank-amount="'+id+'"]'),timeEl=$('[data-bank-time="'+id+'"]'),checkedEl=$('[data-bank-checked="'+id+'"]');
+    const amount=Math.round(Number(amountEl.value)*100);
+    if(!checkedEl.checked)return alert('Tick the box only after you have personally matched the payment in Lloyds.');
+    if(!(amount>0)||!timeEl.value)return alert('Enter the exact amount received and the Lloyds receipt time.');
+    if(!confirm('Issue the Tote tickets now? This should only be done after the payment is visible in Lloyds.'))return;
+    b.disabled=true;b.textContent='Confirming…';
+    try{
+      const out=await toteAdminApi({action:'confirm',order_id:id,received_amount_pence:amount,bank_received_at:new Date(timeEl.value).toISOString(),checked:true});
+      if(out.result?.status==='paid')alert('Payment confirmed. Tickets: '+(out.result.tickets||[]).map(n=>String(n).padStart(3,'0')).join(', ')+'\nEmail: '+String(out.email?.status||'queued'));
+      else if(out.result?.status==='review')alert('The Hub stopped this order for review: '+String(out.result.reason||'check the details')+'. No tickets were issued.');
+      else if(out.result?.status==='late')alert('The payment time is after the sales cutoff. No tickets were issued.');
+      else alert('Order status: '+String(out.result?.status||'unknown'));
+      tote();
+    }catch(err){b.disabled=false;b.textContent='Confirm payment & issue tickets';alert(err.message)}
+  });
+  $('#content').querySelectorAll('[data-bank-reject]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Only do this after checking Lloyds carefully. Mark this order as no matching payment found?'))return;
+    try{await toteAdminApi({action:'reject_unverified',order_id:b.dataset.bankReject});tote()}catch(err){alert(err.message)}
+  });
   $('#content').querySelectorAll('[data-tote-pay]').forEach(b=>b.onclick=async()=>{if(!confirm('Confirm this winner has actually been paid?'))return;const {error}=await sb.rpc('mark_tote_payout_paid',{p_payout_id:b.dataset.totePay,p_notes:null});error?alert(error.message):tote()});
   $('#content').querySelectorAll('[data-tote-alert]').forEach(b=>b.onclick=async()=>{const {error}=await sb.rpc('resolve_tote_alert',{p_alert_id:b.dataset.toteAlert});error?alert(error.message):tote()});
   if($('#downloadToteReturns'))$('#downloadToteReturns').onclick=()=>{const cols=['Draw','Draw date','Gross sales','Club proceeds','Weekly prize','Jackpot added','Jackpot total','Rollover out','Jackpot number','Jackpot won'];const lines=[cols.join(',')].concat(drawHistory.map(h=>[h.draw_number,new Date(h.draw_at).toISOString(),(h.sales_pence/100).toFixed(2),(h.club_share_pence/100).toFixed(2),(h.weekly_prize_pence/100).toFixed(2),(h.jackpot_added_pence/100).toFixed(2),(h.jackpot_total_pence/100).toFixed(2),(h.rollover_out_pence/100).toFixed(2),h.jackpot_number||'',h.jackpot_winning_ticket_id?'Yes':'No'].join(',')));const blob=new Blob([lines.join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='afon-valley-tote-returns.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
   if($('#toteSettingsForm'))$('#toteSettingsForm').onsubmit=async e=>{
     e.preventDefault();const fd=new FormData(e.target),club=Number(fd.get('club')),jackpot=Number(fd.get('jackpot')),weekly=Number(fd.get('weekly'));
     if(club+jackpot+weekly!==100)return alert('Club, jackpot and weekly winner percentages must add up to 100%.');
-    const approved=fd.get('approved')==='on',live=fd.get('live')==='on';
-    if(live&&!approved)return alert('Mark SumUp approval as received before switching live Tote payments on.');
-    if(live&&!info?.email_ready)return alert('Automatic winner email delivery must be configured before live Tote payments can be enabled.');
+    const live=fd.get('live')==='on',sort=String(fd.get('sortcode')||'').replace(/\D/g,''),acc=String(fd.get('accountno')||'').replace(/\D/g,''),bankName=String(fd.get('bankname')||'').trim();
+    if(live&&!info?.email_ready)return alert('Automatic ticket email delivery must be configured before live Tote entries can be enabled.');
     if(live&&(!String(fd.get('reg')||'').trim()||!String(fd.get('person')||'').trim()||!String(fd.get('address')||'').trim()))return alert('Add the lottery registration number and responsible person name/address before going live.');
+    if(live&&(!bankName||sort.length!==6||acc.length!==8))return alert('Add the Lloyds account name, 6-digit sort code and 8-digit account number before going live.');
     const bonus=String(fd.get('bonusvalue')||'').trim();
-    const payload={ticket_price_pence:Math.round(Number(fd.get('price'))*100),pool_size:Number(fd.get('pool')),draw_time:String(fd.get('time'))+':00',club_share_percent:club,jackpot_share_percent:jackpot,weekly_prize_percent:weekly,society_registration_number:String(fd.get('reg')||'').trim()||null,responsible_person_name:String(fd.get('person')||'').trim()||null,responsible_person_address:String(fd.get('address')||'').trim()||null,bonus_prize_label:String(fd.get('bonus')||'').trim()||null,bonus_prize_value_pence:bonus?Math.round(Number(bonus)*100):null,provider_approved:approved,payments_enabled:live,updated_at:new Date().toISOString(),updated_by:user.id};
+    const payload={ticket_price_pence:Math.round(Number(fd.get('price'))*100),pool_size:Number(fd.get('pool')),draw_time:String(fd.get('time'))+':00',club_share_percent:club,jackpot_share_percent:jackpot,weekly_prize_percent:weekly,society_registration_number:String(fd.get('reg')||'').trim()||null,responsible_person_name:String(fd.get('person')||'').trim()||null,responsible_person_address:String(fd.get('address')||'').trim()||null,bonus_prize_label:String(fd.get('bonus')||'').trim()||null,bonus_prize_value_pence:bonus?Math.round(Number(bonus)*100):null,payment_method:'bank_transfer',bank_account_name:bankName||null,bank_sort_code:sort||null,bank_account_number:acc||null,payments_enabled:live,updated_at:new Date().toISOString(),updated_by:user.id};
     if(!(payload.ticket_price_pence>0)||!(payload.pool_size>=50))return alert('Check the ticket price and number pool.');
     if(payload.ticket_price_pence*payload.pool_size>2000000)return alert('That setup could exceed £20,000 of ticket sales in one draw. Reduce the ticket price or number pool.');
-    const {error}=await sb.from('tote_settings').update(payload).eq('id',1);error?alert(error.message):(alert('Tote settings saved. Rule changes apply from the next draw.'),tote());
+    const {error}=await sb.from('tote_settings').update(payload).eq('id',1);error?alert(error.message):(alert('Tote settings saved.'),tote());
   };
 }
 
