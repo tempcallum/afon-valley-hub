@@ -430,7 +430,7 @@ async function eventDetails(id){
     sb.from('event_responses').select('*,players(name,user_id)').eq('event_id',id),
     sb.from('event_payments').select('*').eq('event_id',id).eq('status','paid'),
     sb.from('event_attachments').select('*').eq('event_id',id).order('created_at'),
-    sb.from('event_tasks').select('*,hub_member_directory:assigned_to(display_name)').eq('event_id',id).order('created_at')
+    sb.from('event_tasks').select('*').eq('event_id',id).order('created_at')
   ]);
   if(error)return $('#eventBody').innerHTML='<div class="panel empty">'+esc(error.message)+'</div>';
   const pv=isPlayerView(),payMap=new Map();for(const p of pays||[])payMap.set(p.player_id,(payMap.get(p.player_id)||0)+Number(p.amount_pence));
