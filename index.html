@@ -609,16 +609,16 @@ async function tote(){
   settings=sr.data;payouts=pr.data||[];alerts=ar.data||[];orders=or.data||[];drawHistory=dr.data||[];
   const myLink=referral?.code?toteLink(referral.code):null,clubLink=toteLink('club');
   const rows=(board||[]).map((x,i)=>'<div class="tote-board-row"><span class="rank">'+(i+1)+'</span><strong>'+esc(x.player_name)+'</strong><span>'+x.current_draw_tickets+'</span><span>'+x.month_tickets+'</span><span>'+x.season_tickets+'</span></div>').join('');
-  const bankChecks=orders.filter(o=>o.payment_provider==='bank_transfer'&&['payment_claimed','review','awaiting_payment'].includes(o.status));
-  const nowLocal=localDateTime(new Date());
+  const bankChecks=orders.filter(o=>o.payment_provider==='bank_transfer'&&['payment_claimed','review','awaiting_payment','rejected'].includes(o.status));
   const bankChecksHtml=bankChecks.length?bankChecks.map(o=>{
     const claimed=o.claimed_paid_at?new Date(o.claimed_paid_at).toLocaleString('en-GB'):'Not yet';
     const reason=o.review_reason?'<div class="tote-alert warning"><strong>Review reason: '+esc(o.review_reason.replaceAll('_',' '))+'</strong></div>':'';
     return '<div class="panel" style="margin:10px 0"><div class="head"><div><strong>'+esc(o.buyer_name)+' · '+pounds(o.amount_pence/100)+'</strong><p class="muted">'+esc(o.buyer_email)+' · '+o.ticket_count+' entries · Draw '+esc(o.tote_draws?.draw_number||'')+'</p></div><span class="badge '+(o.status==='payment_claimed'?'warn':o.status==='review'?'bad':'')+'">'+esc(o.status.replaceAll('_',' ').toUpperCase())+'</span></div>'+reason+
       '<div class="list"><div class="row"><span>Bank reference</span><strong style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">'+esc(o.checkout_reference)+'</strong></div><div class="row"><span>Expected</span><strong>'+pounds(o.amount_pence/100)+'</strong></div><div class="row"><span>Buyer pressed “I\'ve paid”</span><strong>'+esc(claimed)+'</strong></div><div class="row"><span>Sales cutoff</span><strong>'+esc(o.tote_draws?.sales_close_at?new Date(o.tote_draws.sales_close_at).toLocaleString('en-GB'):'—')+'</strong></div></div>'+
-      '<div class="form-grid"><label>Amount actually received £<input data-bank-amount="'+o.id+'" inputmode="decimal" value="'+(o.amount_pence/100).toFixed(2)+'"></label><label>Time shown in Lloyds<input data-bank-time="'+o.id+'" type="datetime-local" value="'+nowLocal+'"></label></div>'+
-      '<label class="tote-terms"><input data-bank-checked="'+o.id+'" type="checkbox"><span>I have personally checked Lloyds and matched this payment to the amount/reference above.</span></label>'+
-      '<div class="tote-receipt-actions"><button class="btn primary" data-bank-confirm="'+o.id+'">Confirm payment & issue tickets</button><button class="btn" data-bank-reject="'+o.id+'">No matching payment found</button></div></div>';
+      '<div class="form-grid"><label>Amount actually received £<input data-bank-amount="'+o.id+'" inputmode="decimal" value="'+(o.amount_pence/100).toFixed(2)+'"></label><label>Time shown in Lloyds<input data-bank-time="'+o.id+'" type="datetime-local" value=""></label></div>'+
+      '<label>Reference actually shown in Lloyds<input data-bank-reference="'+o.id+'" autocomplete="off" placeholder="'+esc(o.checkout_reference)+'"></label>'+
+      '<label class="tote-terms"><input data-bank-checked="'+o.id+'" type="checkbox"><span>I have personally checked Lloyds and matched the amount, reference and receipt time above.</span></label>'+
+      '<div class="tote-receipt-actions">'+(o.status==='rejected'?'<button class="btn primary" data-bank-reopen="'+o.id+'">Reopen for checking</button>':'<button class="btn primary" data-bank-confirm="'+o.id+'">Confirm payment & issue tickets</button><button class="btn" data-bank-reject="'+o.id+'">No matching payment found</button>')+'</div></div>';
   }).join(''):'<div class="success-note">No bank payments are waiting for your check.</div>';
 
   $('#content').innerHTML=
@@ -635,14 +635,14 @@ async function tote(){
   if(myLink){$('#copyMyTote').onclick=e=>copyText(myLink,e.currentTarget);renderQr($('#myToteQr'),myLink)}
   if($('#copyClubTote')){$('#copyClubTote').onclick=e=>copyText(clubLink,e.currentTarget);renderQr($('#clubToteQr'),clubLink)}
   $('#content').querySelectorAll('[data-bank-confirm]').forEach(b=>b.onclick=async()=>{
-    const id=b.dataset.bankConfirm,amountEl=$('[data-bank-amount="'+id+'"]'),timeEl=$('[data-bank-time="'+id+'"]'),checkedEl=$('[data-bank-checked="'+id+'"]');
-    const amount=Math.round(Number(amountEl.value)*100);
+    const id=b.dataset.bankConfirm,amountEl=$('[data-bank-amount="'+id+'"]'),timeEl=$('[data-bank-time="'+id+'"]'),refEl=$('[data-bank-reference="'+id+'"]'),checkedEl=$('[data-bank-checked="'+id+'"]');
+    const amount=Math.round(Number(amountEl.value)*100),seenRef=String(refEl.value||'').trim();
     if(!checkedEl.checked)return alert('Tick the box only after you have personally matched the payment in Lloyds.');
-    if(!(amount>0)||!timeEl.value)return alert('Enter the exact amount received and the Lloyds receipt time.');
+    if(!(amount>0)||!timeEl.value||!seenRef)return alert('Enter the exact amount, the reference shown in Lloyds and the actual Lloyds receipt time.');
     if(!confirm('Issue the Tote tickets now? This should only be done after the payment is visible in Lloyds.'))return;
     b.disabled=true;b.textContent='Confirming…';
     try{
-      const out=await toteAdminApi({action:'confirm',order_id:id,received_amount_pence:amount,bank_received_at:new Date(timeEl.value).toISOString(),checked:true});
+      const out=await toteAdminApi({action:'confirm',order_id:id,received_amount_pence:amount,bank_received_at:new Date(timeEl.value).toISOString(),bank_reference_seen:seenRef,checked:true});
       if(out.result?.status==='paid')alert('Payment confirmed. Tickets: '+(out.result.tickets||[]).map(n=>String(n).padStart(3,'0')).join(', ')+'\nEmail: '+String(out.email?.status||'queued'));
       else if(out.result?.status==='review')alert('The Hub stopped this order for review: '+String(out.result.reason||'check the details')+'. No tickets were issued.');
       else if(out.result?.status==='late')alert('The payment time is after the sales cutoff. No tickets were issued.');
@@ -653,6 +653,10 @@ async function tote(){
   $('#content').querySelectorAll('[data-bank-reject]').forEach(b=>b.onclick=async()=>{
     if(!confirm('Only do this after checking Lloyds carefully. Mark this order as no matching payment found?'))return;
     try{await toteAdminApi({action:'reject_unverified',order_id:b.dataset.bankReject});tote()}catch(err){alert(err.message)}
+  });
+  $('#content').querySelectorAll('[data-bank-reopen]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Reopen this order for another Lloyds check? No tickets will be issued until you verify it again.'))return;
+    try{await toteAdminApi({action:'reopen',order_id:b.dataset.bankReopen});tote()}catch(err){alert(err.message)}
   });
   $('#content').querySelectorAll('[data-tote-pay]').forEach(b=>b.onclick=async()=>{if(!confirm('Confirm this winner has actually been paid?'))return;const {error}=await sb.rpc('mark_tote_payout_paid',{p_payout_id:b.dataset.totePay,p_notes:null});error?alert(error.message):tote()});
   $('#content').querySelectorAll('[data-tote-alert]').forEach(b=>b.onclick=async()=>{const {error}=await sb.rpc('resolve_tote_alert',{p_alert_id:b.dataset.toteAlert});error?alert(error.message):tote()});
