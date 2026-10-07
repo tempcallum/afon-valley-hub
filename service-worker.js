@@ -1,4 +1,4 @@
-const CACHE='avfc-hub-v19';
+const CACHE='avfc-hub-v20';
 const APP_SHELL=[
   './',
   './index.html',
@@ -43,7 +43,7 @@ self.addEventListener('push',event=>{
     icon:'avfc-logo.jpg',
     badge:'avfc-logo.jpg',
     data:{url:data.url||'./'},
-    tag:'avfc-'+(data.type||'general'),
+    tag:data.tag||('avfc-'+(data.type||'general')),
     renotify:true
   }));
 });
