@@ -463,12 +463,13 @@ async function events(){
   if(eventParam&&upcoming.some(e=>e.id===eventParam)){const id=eventParam;eventParam=0;setTimeout(()=>eventDetails(id),0)}
 }
 async function eventDetails(id){
-  const [{data:e,error},{data:rs},{data:pays},{data:attachments},{data:tasks}]=await Promise.all([
+  const [{data:e,error},{data:rs},{data:pays},{data:attachments},{data:tasks},{data:eventCounts}]=await Promise.all([
     sb.from('club_events').select('*').eq('id',id).single(),
     sb.from('event_responses').select('*,players(name,user_id)').eq('event_id',id),
     sb.from('event_payments').select('*').eq('event_id',id).eq('status','paid'),
     sb.from('event_attachments').select('*').eq('event_id',id).order('created_at'),
-    sb.from('event_tasks').select('*').eq('event_id',id).order('created_at')
+    sb.from('event_tasks').select('*').eq('event_id',id).order('created_at'),
+    sb.rpc('get_event_counts',{p_event_id:id})
   ]);
   if(error)return $('#eventBody').innerHTML='<div class="panel empty">'+esc(error.message)+'</div>';
   const pv=isPlayerView(),payMap=new Map();for(const p of pays||[])payMap.set(p.player_id,(payMap.get(p.player_id)||0)+Number(p.amount_pence));
@@ -477,7 +478,7 @@ async function eventDetails(id){
 
   if(pv){
     if(!myPlayer)return $('#eventBody').innerHTML='<div class="panel empty">Your account is not linked to a player yet.</div>';
-    const mine=(rs||[]).find(r=>r.player_id===myPlayer),paid=payMap.get(myPlayer)||0,due=Math.max(0,Number(e.price_pence)-paid),yesCount=(rs||[]).filter(r=>r.response==='yes').length,full=e.capacity&&yesCount>=e.capacity;
+    const mine=(rs||[]).find(r=>r.player_id===myPlayer),paid=payMap.get(myPlayer)||0,due=Math.max(0,Number(e.price_pence)-paid),yesCount=Number(eventCounts?.[0]?.yes_count||0),full=e.capacity&&yesCount>=e.capacity;
     $('#eventBody').innerHTML='<div class="panel event-detail"><span class="eyebrow dark">CLUB EVENT</span><h3>'+esc(e.title)+'</h3><p class="event-when">'+day(e.event_date)+' · '+time(e.event_date)+(e.venue?' · '+esc(e.venue):'')+'</p>'+(e.description?'<p class="muted">'+esc(e.description)+'</p>':'')+cal+attachmentHtml+
       '<div class="event-player-status"><div><small>Price</small><strong>'+(e.price_pence?cash(e.price_pence):'Free')+'</strong></div><div><small>My reply</small><strong>'+esc(mine?.response?mine.response.toUpperCase():'NOT SET')+'</strong></div><div><small>Payment</small><strong class="'+(due===0?'paid-text':'due-text')+'">'+(e.price_pence===0?'Not needed':due===0?'Paid':cash(due)+' due')+'</strong></div></div>'+
       (e.capacity?'<p class="muted">'+yesCount+'/'+e.capacity+' places taken'+(full&&e.waitlist_enabled?' · New Yes replies join the waiting list':'')+'</p>':'')+
