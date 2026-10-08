@@ -416,7 +416,7 @@ async function loadAtt(id,ps){const {data:rs}=await sb.from('attendance').select
 
 
 async function calendar(){
-  $('#content').innerHTML='<div class="panel"><span class="eyebrow dark">AFON VALLEY FC</span><h3>My live club calendar</h3><p class="muted">Subscribe once to keep fixtures and events in your calendar when the club makes changes. Training sessions currently appear as all-day dates; please check the Hub for the time.</p><div id="calendarSubscription" class="panel empty">Preparing your private subscription…</div></div>';
+  $('#content').innerHTML='<div class="panel"><span class="eyebrow dark">AFON VALLEY FC</span><h3>My live club calendar</h3><p class="muted">Subscribe once to keep fixtures and events in your calendar when the club makes changes. Training sessions appear from 8:00 pm to 9:00 pm UK time. Check the Hub for the latest venue details.</p><div id="calendarSubscription" class="panel empty">Preparing your private subscription…</div></div>';
   const {data,error}=await sb.functions.invoke('club-calendar-feed',{body:{action:'get'}});
   const area=$('#calendarSubscription');
   if(!area)return;
