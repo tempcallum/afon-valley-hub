@@ -41,6 +41,7 @@ drawNav=function(){
  const nav=$('#nav');
  if(!nav)return;
  nav.classList.add('hub-main-nav');
+ nav.style.gridTemplateColumns='repeat('+groups.length+',minmax(0,1fr))';
  nav.innerHTML=groups.map(g=>'<button type="button" data-hub-group="'+g.id+'" class="'+(g.id===activeGroup.id?'active':'')+'">'+g.label+'</button>').join('');
  if(!document.getElementById('hub-subnav'))nav.insertAdjacentHTML('afterend','<nav class="hub-subnav" id="hub-subnav" aria-label="Page sections"></nav>');
  const sub=document.getElementById('hub-subnav');
