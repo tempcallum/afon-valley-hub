@@ -81,3 +81,64 @@
 }
 .hub-home-match-link:hover{background:#ffffff20}
 .hub-home-match-link:focus-visible{outline:2px solid #f2d24f;outline-offset:-3px}
+
+/* Clearer secondary tabs — slightly larger text, stronger selected state. */
+.hub-subnav{gap:8px;padding-top:3px;padding-bottom:13px}
+.hub-subnav button{
+ font-size:13px;font-weight:900;min-height:44px;padding:10px 16px;
+ border:1px solid #cbdcd0;background:#fff;color:#365b45;
+ box-shadow:0 2px 5px rgba(9,57,32,.05);border-radius:10px;
+}
+.hub-subnav button.active{
+ background:#e6f2e9;color:#064a2f;border:1px solid #81ba91;
+ box-shadow:inset 0 -3px 0 #0d7848;font-weight:950;
+}
+@media(max-width:620px){
+ .hub-subnav{gap:7px;padding-top:3px;padding-bottom:12px}
+ .hub-subnav button{font-size:12px;min-height:43px;padding:10px 14px}
+}
+/* Compact first-time checklist on the home page. */
+.hub-setup-card{
+ display:block;background:#fff;border:1px solid #cddfd0;
+ border-radius:17px;overflow:hidden;box-shadow:0 9px 22px rgba(5,48,30,.08);
+}
+.hub-setup-head{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ background:linear-gradient(110deg,#06432a,#0b6941);padding:14px 16px;color:#fff;
+}
+.hub-setup-head h3{font-size:20px;line-height:1.17;letter-spacing:-.03em;margin:3px 0}
+.hub-setup-head p{margin:3px 0 0;color:#d5e9da;font-size:11px}
+.hub-setup-kicker{font-size:9px;font-weight:950;letter-spacing:.13em;color:#f2d24f}
+.hub-setup-count{min-width:48px;display:inline-flex;align-items:center;justify-content:center;
+ padding:8px 10px;background:#ffffff18;border:1px solid #ffffff35;border-radius:10px;
+ color:#f5d34e;font-size:15px;font-weight:950;font-variant-numeric:tabular-nums}
+.hub-setup-track{height:5px;background:#d6e9da}
+.hub-setup-fill{height:100%;background:#f2d24f;transition:width .25s ease}
+.hub-setup-rows{padding:3px 14px}
+.hub-setup-row{
+ display:flex;align-items:center;gap:11px;min-height:51px;padding:8px 1px;
+ border-bottom:1px solid #eaf0ea;
+}
+.hub-setup-row:last-child{border:0}
+.hub-setup-mark{flex:none;display:grid;place-items:center;width:27px;height:27px;border-radius:8px;
+ background:#f8ecc0;color:#6f5814;border:1px solid #e9d588;font-size:12px;font-weight:950}
+.hub-setup-row.is-done .hub-setup-mark{background:#e1f1e6;color:#07623e;border-color:#b5d5bc}
+.hub-setup-desc{min-width:0;flex:1}
+.hub-setup-desc strong{display:block;font-size:12px;color:#173b26;line-height:1.4}
+.hub-setup-desc small{display:block;font-size:10px;color:#7c8d81;margin-top:2px}
+.hub-setup-row.is-done .hub-setup-desc strong{color:#658073}
+.hub-setup-status{font-size:10px;color:#117143;font-weight:900}
+.hub-setup-go{flex:none;cursor:pointer;border:1px solid #d9c269;background:#f8e9a6;color:#55430b;
+ font-weight:950;font-size:11px;min-width:55px;min-height:33px;border-radius:9px;padding:7px 11px}
+.hub-setup-go:hover{background:#f2d24f}
+.hub-setup-go:focus-visible{outline:3px solid #147345;outline-offset:2px}
+.hub-setup-bottom{padding:9px 15px;background:#f7faf8;border-top:1px solid #e4eee7;
+ color:#77887a;font-size:10px;line-height:1.4}
+@media(max-width:430px){
+ .hub-setup-head{padding:12px 13px}
+ .hub-setup-head h3{font-size:19px}
+ .hub-setup-rows{padding:2px 11px}
+ .hub-setup-desc strong{font-size:12px}
+ .hub-setup-row{min-height:49px}
+ .hub-setup-bottom{padding:8px 12px}
+}
