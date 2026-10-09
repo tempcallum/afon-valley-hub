@@ -1,47 +1,61 @@
 
-/* Personal Afon Valley COMET stats and Chair-verified identity matching. */
+/* Personal COMET statistics, always placed immediately below match availability. */
 const originalHomeForComet=home;
 home=async function(){
   await originalHomeForComet();
   if(!isPlayerView()||!myPlayer)return;
-  const root=$('#content'),feature=root?.querySelector('.match-feature');
-  if(!root||!feature)return;
-  feature.insertAdjacentHTML('afterend',
-    '<section class="panel" id="cometPersonalCard" style="margin-top:12px">'+
-    '<div class="head"><div><span class="eyebrow dark">OFFICIAL FAW COMET · 2026/27</span><h3>My football stats</h3></div>'+
-    '<span class="badge">COMET</span></div><div id="cometPersonalContent" class="empty">Loading your match statistics…</div></section>');
-  const element=$('#cometPersonalContent');
+  const root=$('#content');
+  if(!root)return;
+  const availability=root.querySelector('.player-status-card');
+  const dash=root.querySelector('.dashboard-stats');
+  const fixture=root.querySelector('.match-feature');
+  const card=document.createElement('section');
+  card.className='comet-home-card';
+  card.id='cometPersonalCard';
+  card.setAttribute('aria-labelledby','cometPersonalTitle');
+  card.innerHTML='<div class="comet-home-heading">'+
+    '<div><span class="comet-home-eyebrow comet-home-season">OFFICIAL FAW COMET · 2026/27</span>'+
+    '<h3 id="cometPersonalTitle">My season stats</h3><p>Your competitive football, all in one place.</p></div>'+
+    '<span class="comet-home-mark" aria-label="FAW statistics">FAW<br>STATS</span>'+
+    '</div><div class="comet-home-body comet-loading" id="cometPersonalContent" aria-live="polite">Loading your statistics…</div>';
+  if(availability)availability.insertAdjacentElement('afterend',card);
+  else if(dash)dash.insertAdjacentElement('beforebegin',card);
+  else if(fixture)fixture.insertAdjacentElement('afterend',card);
+  else root.appendChild(card);
+  const element=card.querySelector('#cometPersonalContent');
   const {data,error}=await sb.from('comet_my_player_stats')
-    .select('season,appearances,starts,goals,own_goals,yellows,second_yellows,reds,minutes_played,last_match,person_name')
+    .select('season,appearances,starts,goals,yellows,reds,minutes_played')
     .eq('player_id',myPlayer).order('season',{ascending:false}).limit(10);
-  if(!element||!element.isConnected)return;
+  if(!card.isConnected||!element)return;
   if(error){
-    element.innerHTML='<p>Could not load your COMET stats right now. Please try again later.</p>';return;
-  }
-  const values=(data||[]).filter(x=>x.season);
-  const stats=values[0]||(data||[])[0];
-  if(!stats){
-    element.classList.remove('empty');
-    element.innerHTML='<div class="dashboard-stats comet-personal-grid" style="margin-bottom:12px">'+
-      [['Appearances',0],['Starts',0],['Goals',0],['Minutes',0],['Yellow cards',0],['Red cards',0]]
-      .map(([label,value])=>'<div class="metric"><span>'+esc(label)+'</span><strong>'+value+'</strong></div>').join('')+
-      '</div><p class="muted">No official competitive appearances are linked to your Hub account yet. If you haven\'t made your Afon Valley competitive debut, this is expected. Once you play, the Chair can confirm your COMET record to activate your statistics.</p>'+
-      '<p class="muted">If you have already played a competitive match, ask the Chair to check your COMET player link.</p>';
+    element.textContent='Official COMET statistics are temporarily unavailable. Please try again shortly.';
     return;
   }
-  const vals=[
-   ['Appearances',stats.appearances],['Starts',stats.starts],['Goals',stats.goals],
-   ['Minutes',stats.minutes_played],['Yellow cards',stats.yellows],['Red cards',stats.reds]
+  const rows=(data||[]).filter(x=>x.season);
+  const stats=rows[0]||(data||[])[0]||null;
+  if(stats){
+    const season=String(stats.season||'Current season');
+    card.querySelector('.comet-home-season').textContent='OFFICIAL FAW COMET · '+season;
+  }
+  const tiles=[
+    ['Appearances',stats?.appearances||0,'is-primary'],
+    ['Goals',stats?.goals||0,'is-primary is-goals'],
+    ['Starts',stats?.starts||0,''],
+    ['Minutes',stats?.minutes_played||0,''],
+    ['Yellow cards',stats?.yellows||0,''],
+    ['Red cards',stats?.reds||0,'']
   ];
-  const prettySeason=String(stats.season||'Current season').replace(/^(\d{4})\/(\d{4})$/,'$1/$2');
-  $('#cometPersonalCard .eyebrow').textContent='OFFICIAL FAW COMET · '+prettySeason;
-  element.classList.remove('empty');
-  element.innerHTML='<div class="dashboard-stats comet-personal-grid" style="margin-bottom:12px">'+
-   vals.map(([label,v])=>'<div class="metric"><span>'+esc(label)+'</span><strong>'+Number(v||0).toLocaleString('en-GB')+'</strong></div>').join('')+
-   '</div><div class="actions"><button class="btn" id="cometViewSquadStats">View full player stats</button></div>'+
-   '<p class="muted" style="margin-top:10px">Official FAW appearance records. Updated when COMET syncs with the club. Not all competitions record assists or every match event.</p>';
-  const btn=$('#cometViewSquadStats');
-  if(btn)btn.onclick=()=>{tab='stats';drawNav();render(tab)};
+  element.classList.remove('comet-loading');
+  element.innerHTML='<div class="comet-home-stats">'+
+    tiles.map(([label,value,styling])=>
+      '<div class="comet-home-tile '+styling+'"><span>'+esc(label)+'</span><strong>'+
+      Number(value).toLocaleString('en-GB')+'</strong></div>').join('')+
+    '</div>'+
+    (!stats?'<p class="comet-home-empty-note">No competitive appearances are currently linked to your account. If you have not made your debut yet, these zeroes are expected. Already played? Ask the Chair to check your COMET link.</p>':'')+
+    '<div class="comet-home-footer"><p>Official FAW records · Updated after the club COMET sync</p>'+
+    '<button type="button" class="comet-home-view" id="cometViewSquadStats">View full stats</button></div>';
+  const button=card.querySelector('#cometViewSquadStats');
+  if(button)button.onclick=()=>{tab='stats';drawNav();render(tab)};
 };
 
 const chairCometPrevious=renderAdminExtras;
