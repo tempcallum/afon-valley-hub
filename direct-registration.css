@@ -1,0 +1,61 @@
+
+/* AVFC direct FAW registration – mobile-first and emoji-free. */
+.direct-reg-page{min-height:100vh;background:linear-gradient(155deg,#e7f0e9,#f5f8f6 65%);color:#132b1c;padding:20px 12px 45px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.direct-reg-wrap{max-width:900px;margin:auto}
+.direct-reg-top{display:flex;align-items:center;gap:12px;padding:9px 3px 20px}
+.direct-reg-top img{width:53px;height:53px;border-radius:50%;border:3px solid #e8c845;object-fit:cover;background:#063823}
+.direct-reg-top strong,.direct-reg-top span{display:block}
+.direct-reg-top strong{font-weight:950;letter-spacing:.06em;color:#053d25}
+.direct-reg-top span{font-size:11px;letter-spacing:.12em;font-weight:900;color:#64796a;margin-top:3px}
+.direct-reg-paper{background:#fff;border:1px solid #d4e1d6;border-radius:20px;overflow:hidden;box-shadow:0 20px 52px rgba(6,59,36,.12)}
+.direct-reg-hero{padding:27px 24px;background:linear-gradient(120deg,#053820 0%,#086e42 100%);color:#fff;border-top:5px solid #f2d24f}
+.direct-reg-hero>span{color:#f2d24f;font-size:11px;font-weight:900;letter-spacing:.12em}
+.direct-reg-hero h1{font-size:clamp(27px,4vw,36px);margin:8px 0;letter-spacing:-.04em;line-height:1.12}
+.direct-reg-hero p{margin:0;max-width:640px;font-size:14px;line-height:1.65;color:#e1ede4}
+.direct-reg-notice{margin-top:17px;padding:12px 14px;border-left:3px solid #f2d24f;background:#ffffff12;font-size:13px;line-height:1.6}
+.direct-reg-form{padding:0 24px 25px}
+.direct-reg-section{border-bottom:1px solid #e0eae2;padding:24px 0}
+.direct-reg-section h2{display:flex;gap:12px;align-items:center;font-size:19px;letter-spacing:-.025em;margin:0 0 18px;color:#06452b}
+.direct-reg-section h2 span{width:36px;height:36px;display:grid;place-items:center;background:#e8f2e9;color:#075837;border:1px solid #caddd0;border-radius:11px;font-size:12px;letter-spacing:.02em}
+.direct-reg-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.direct-reg-form label:not(.direct-reg-check){display:block;font-weight:800;font-size:13px;color:#234433}
+.direct-reg-fields input,.direct-reg-fields select{width:100%;margin-top:6px;border:1px solid #c5d3c9;border-radius:10px;min-height:47px;background:#fff;color:#102a1b;padding:10px 12px;font-size:15px;font-weight:500}
+.direct-reg-fields input:focus,.direct-reg-fields select:focus{outline:2px solid #e5c14b;outline-offset:1px;border-color:#0b7548}
+.direct-reg-privacy{font-size:13px;line-height:1.7;color:#526958;margin:0 0 17px}
+.direct-reg-privacy a{color:#075b37;font-weight:800}
+.direct-reg-check{display:flex!important;align-items:flex-start;gap:11px;padding:10px 0;font-size:13px;font-weight:650;color:#254634;line-height:1.5}
+.direct-reg-check input{flex:0 0 18px!important;width:18px!important;height:18px!important;min-height:18px!important;margin:1px 0 0!important;accent-color:#07633c}
+.direct-reg-send{margin:23px 0 0;width:100%;min-height:52px;padding:13px 16px;border:0;border-radius:10px;background:#08643d;color:white;font-size:15px;font-weight:900;cursor:pointer}
+.direct-reg-send:hover{background:#06492f}
+.direct-reg-send:disabled{opacity:.6;cursor:wait}
+#directRegMessage{font-size:13px;font-weight:700;color:#a93636;min-height:18px;margin:10px 0 0}
+.direct-reg-success{padding:34px 25px 39px}
+.direct-reg-success h2{color:#07633c;margin:0 0 12px}
+.direct-reg-success p{color:#4c6554;font-size:15px;line-height:1.7}
+.direct-reg-foot{text-align:center;color:#657a6d;font-size:12px;margin:21px auto}
+.direct-reg-honeypot{display:none!important}
+.direct-reg-admin-share{border-left:5px solid #f2d24f}
+.direct-reg-share{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.direct-reg-share input{flex:1 1 240px;width:100%;margin:0;font-size:13px;background:#f4f7f4}
+.direct-reg-share .btn{min-height:43px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.direct-reg-admin-inbox .direct-reg-inbox-row{padding:12px 0;border-bottom:1px solid #e1eae4;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.direct-reg-inbox-row:last-child{border-bottom:0}
+.direct-reg-inbox-row strong,.direct-reg-inbox-row small{display:block}
+.direct-reg-inbox-row small{color:#617267;font-size:12px;margin-top:4px}
+.direct-reg-inbox-row .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.direct-reg-inbox-row select{min-width:180px;min-height:43px;margin:0}
+.direct-reg-private-view{margin:14px 0 4px;border-top:3px solid #0b6b40;padding:18px 4px}
+.direct-reg-value{display:grid;grid-template-columns:minmax(130px,180px) minmax(0,1fr);gap:11px;padding:10px 0;border-bottom:1px solid #e4ece6;font-size:13px;overflow-wrap:anywhere}
+.direct-reg-value strong{color:#385544}
+.direct-reg-private-view .actions{margin-top:15px}
+@media(max-width:600px){
+ .direct-reg-page{padding:10px 9px 35px}
+ .direct-reg-paper{border-radius:14px}
+ .direct-reg-hero{padding:22px 16px}
+ .direct-reg-form{padding:0 16px 20px}
+ .direct-reg-section{padding:19px 0}
+ .direct-reg-fields{grid-template-columns:1fr;gap:13px}
+ .direct-reg-share .btn{flex:1}
+ .direct-reg-value{grid-template-columns:1fr;gap:3px}
+ .direct-reg-inbox-row select{width:100%}
+}
