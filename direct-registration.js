@@ -130,18 +130,27 @@ renderAdminExtras=async function(){
   .select('id,full_name,email,phone,details,status,submitted_at').order('submitted_at',{ascending:false}).limit(100);
  if(error){area.querySelector('.direct-reg-admin-share').insertAdjacentHTML('afterend','<div class="panel">Could not load registration submissions.</div>');return;}
  const rows=items||[];
- const newCount=rows.filter(r=>r.status==='received').length;
+ const activeRows=rows.filter(r=>r.status!=='hub_added');
+ const archivedRows=rows.filter(r=>r.status==='hub_added');
+ const newCount=activeRows.filter(r=>r.status==='received').length;
+ const registrationRow=r=>
+  '<div class="direct-reg-inbox-row"><div><strong>'+esc(r.full_name)+'</strong>'+
+  '<small>'+esc(r.email)+' · '+esc(new Date(r.submitted_at).toLocaleDateString('en-GB'))+'</small></div>'+
+  '<div class="actions"><button class="btn" data-direct-reg-open="'+r.id+'">View details</button>'+
+  '<select data-direct-reg-status="'+r.id+'" aria-label="Registration status for '+esc(r.full_name)+'">'+
+  '<option value="received">Form received</option><option value="comet_registered">Registered on COMET</option>'+
+  '<option value="hub_added">Added to Hub</option></select></div></div>';
+ const archive=archivedRows.length?
+  '<details class="direct-reg-archive"><summary>Archived registrations ('+archivedRows.length+')</summary>'+
+  '<p class="muted">These players have been marked Added to Hub. Their forms are kept for club records but hidden from your active list.</p>'+
+  '<div class="list">'+archivedRows.map(registrationRow).join('')+'</div></details>':'';
  const html='<div class="panel direct-reg-admin-inbox"><div class="head"><div>'+
- '<span class="eyebrow dark">CHAIR ONLY · PRIVATE</span><h3>Completed registration forms</h3></div>'+
+ '<span class="eyebrow dark">CHAIR ONLY · PRIVATE</span><h3>Player registration inbox</h3></div>'+
  '<span class="badge '+(newCount?'warn':'ok')+'">'+newCount+' awaiting COMET</span></div>'+
- '<p class="muted">Review the submitted form, register the player in FAW COMET manually and update the status. These records do not automatically create Hub accounts.</p>'+
- (rows.length?'<div class="list">'+rows.map(r=>'<div class="direct-reg-inbox-row"><div><strong>'+esc(r.full_name)+'</strong>'+
- '<small>'+esc(r.email)+' · '+esc(new Date(r.submitted_at).toLocaleDateString('en-GB'))+'</small></div>'+
- '<div class="actions"><button class="btn" data-direct-reg-open="'+r.id+'">View details</button>'+
- '<select data-direct-reg-status="'+r.id+'" aria-label="Registration status for '+esc(r.full_name)+'">'+
- '<option value="received">Form received</option><option value="comet_registered">Registered on COMET</option>'+
- '<option value="hub_added">Added to Hub</option></select></div></div>').join('')+'</div>':
- '<p class="muted">No registration forms have been received yet.</p>')+
+ '<p class="muted">Review new forms, register the player on FAW COMET, then mark them Added to Hub. Completed entries move into the closed archive automatically.</p>'+
+ (activeRows.length?'<div class="list">'+activeRows.map(registrationRow).join('')+'</div>':
+ '<p class="muted direct-reg-inbox-clear">All caught up — no outstanding player registrations.</p>')+
+ archive+
  '<div id="directRegDetailsViewer"></div></div>';
  area.querySelector('.direct-reg-admin-share').insertAdjacentHTML('afterend',html);
  area.querySelectorAll('[data-direct-reg-status]').forEach(sel=>{
