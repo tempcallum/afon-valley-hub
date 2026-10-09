@@ -1,0 +1,69 @@
+
+/* Streamlined primary navigation: consistent, horizontal and small-screen friendly. */
+.hub-main-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px;padding:10px 0 6px;margin:0;overflow:visible}
+.hub-main-nav button{white-space:nowrap;border-radius:12px;min-height:44px;padding:10px 8px;border:1px solid #dae5dc;background:#fff;font-size:12px;font-weight:900;box-shadow:none}
+.hub-main-nav button.active{background:#07563a;color:#fff;border-color:#07563a}
+.hub-subnav{display:flex;gap:7px;padding:0 0 11px;overflow-x:auto;scrollbar-width:thin;white-space:nowrap;-webkit-overflow-scrolling:touch}
+.hub-subnav button{flex:none;border:1px solid #e0e8e1;background:#f9fbf8;color:#54715e;font-weight:800;font-size:11px;padding:9px 12px;min-height:37px;border-radius:9px}
+.hub-subnav button.active{background:#e5f1e9;color:#064c2c;border-color:#a8d1b4}
+.hub-subnav button:focus-visible,.hub-main-nav button:focus-visible{outline:2px solid #eac647;outline-offset:2px}
+.hub-policy-page{background:#fff;border:1px solid #dce7df;border-radius:17px;overflow:hidden;box-shadow:0 9px 28px #052f1d0d}
+.hub-section-header{padding:20px 20px 16px;border-bottom:1px solid #e1eae3}
+.hub-section-header h3{font-size:24px;letter-spacing:-.03em;color:#063c24;margin:4px 0 5px}
+.hub-section-header p{font-size:12px;line-height:1.55;margin:0;max-width:680px}
+.hub-policy-list{padding:0 18px}
+.hub-policy-row{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #e8eee9;min-height:65px;padding:8px 0}
+.hub-policy-row:last-child{border-bottom:0}
+.hub-policy-row>div{display:flex;align-items:center;gap:11px;min-width:0}
+.hub-policy-index{font-size:10px;font-weight:1000;color:#9a8b34;letter-spacing:.05em;min-width:21px}
+.hub-policy-name{display:block;min-width:0}
+.hub-policy-name strong{display:block;color:#163b26;font-size:13px}
+.hub-policy-name small{display:block;color:#879289;margin-top:3px;font-size:10px}
+.hub-policy-open{color:#075b37;border-color:#b4d3bd;min-height:38px;padding:7px 12px;font-size:12px;flex-shrink:0}
+.hub-matchday{background:#fff;border:1px solid #d7e7da;border-radius:19px;overflow:hidden;box-shadow:0 10px 26px #06352210}
+.hub-md-header{background:linear-gradient(120deg,#063721,#0b7045);border-top:5px solid #f2d24f;color:#fff;padding:22px 20px 19px}
+.hub-md-header>span{display:block;color:#f2d24f;font-size:10px;letter-spacing:.13em;font-weight:950}
+.hub-md-fixture h2{font-size:clamp(20px,4vw,30px);margin:8px 0 4px;line-height:1.18;letter-spacing:-.03em}
+.hub-md-fixture h2 small{font-size:.58em;font-weight:650;color:#d1e6d8}
+.hub-md-fixture p{font-size:12px;color:#dcece1;margin:5px 0 0;line-height:1.5}
+.hub-md-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:16px}
+.hub-md-item{background:#f3f7f4;border:1px solid #e0e9e2;border-radius:12px;padding:12px;min-width:0}
+.hub-md-item span,.hub-md-item strong{display:block}
+.hub-md-item span{font-size:10px;color:#6b8472;text-transform:uppercase;letter-spacing:.055em;font-weight:850}
+.hub-md-item strong{font-size:15px;color:#063e28;margin-top:7px;line-height:1.45;overflow-wrap:anywhere}
+.hub-md-actions{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 16px}
+.hub-md-actions .btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:41px;font-size:12px}
+.hub-md-team{margin:0 16px 16px;padding:15px;background:#fff;border:1px solid #d9e6db;border-radius:13px}
+.hub-md-team-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hub-md-team-top h3{margin:3px 0 0;font-size:19px;letter-spacing:-.025em;color:#063e28}
+.hub-md-team .muted{font-size:12px;margin:10px 0 0}
+.hub-md-my-role{background:#eaf3eb;border-left:3px solid #0c7c4e;padding:9px 12px;border-radius:7px;font-size:12px;font-weight:850;color:#084c2f}
+.hub-md-lineup{margin-top:12px;border-top:1px solid #e4eae5;padding-top:11px}
+.hub-md-lineup summary,.hub-md-settings summary{cursor:pointer;font-weight:850;color:#0b5937;font-size:13px;padding:7px 0;outline-offset:3px}
+.hub-md-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding-top:9px}
+.hub-md-roster h4{font-size:12px;text-transform:uppercase;color:#43614b;margin:4px 0 10px}
+.hub-md-roster p{padding:6px 0;border-bottom:1px solid #eef1ed;margin:0;font-size:12px;color:#254532}
+.hub-md-roster p b{display:inline-block;min-width:39px;color:#065434}
+.hub-md-settings{padding:14px 17px;margin:0 16px 16px;border:1px solid #d9e5dc;border-radius:12px;background:#f8faf8}
+.hub-md-settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;padding-top:8px}
+.hub-md-settings-grid label{font-size:11px;color:#355c43}
+.hub-md-settings-grid label input,.hub-md-settings-grid label select{width:100%;margin-top:5px;min-height:43px;font-size:13px}
+.hub-md-settings-grid button{grid-column:1/-1;justify-self:start}
+.hub-md-settings p{font-size:11px;line-height:1.5;margin:10px 0 0}
+.hub-match-loading{min-height:160px;padding:24px}
+@media(max-width:620px){
+ .hub-main-nav{gap:4px}
+ .hub-main-nav button{padding:9px 4px;font-size:11px;letter-spacing:-.015em}
+ .hub-subnav{gap:5px;padding-bottom:9px}
+ .hub-subnav button{font-size:11px;padding:7px 10px}
+ .hub-md-header{padding:17px 15px}
+ .hub-md-summary{gap:8px;padding:12px}
+ .hub-md-item{padding:10px}
+ .hub-md-item strong{font-size:13px}
+ .hub-md-actions{padding:0 12px 12px}
+ .hub-md-team{margin:0 12px 12px;padding:12px}
+ .hub-md-settings{margin:0 12px 12px}
+ .hub-md-roster,.hub-md-settings-grid{grid-template-columns:1fr}
+ .hub-policy-list{padding:0 13px}
+ .hub-section-header{padding:17px 14px}
+}
