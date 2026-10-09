@@ -21,7 +21,12 @@ home=async function(){
   const values=(data||[]).filter(x=>x.season);
   const stats=values[0]||(data||[])[0];
   if(!stats){
-    element.innerHTML='<p class="muted">Your official COMET record has not been matched to your Hub player account yet. The Chair can connect it in Admin → COMET Player Links.</p>';
+    element.classList.remove('empty');
+    element.innerHTML='<div class="dashboard-stats comet-personal-grid" style="margin-bottom:12px">'+
+      [['Appearances',0],['Starts',0],['Goals',0],['Minutes',0],['Yellow cards',0],['Red cards',0]]
+      .map(([label,value])=>'<div class="metric"><span>'+esc(label)+'</span><strong>'+value+'</strong></div>').join('')+
+      '</div><p class="muted">No official competitive appearances are linked to your Hub account yet. If you haven\'t made your Afon Valley competitive debut, this is expected. Once you play, the Chair can confirm your COMET record to activate your statistics.</p>'+
+      '<p class="muted">If you have already played a competitive match, ask the Chair to check your COMET player link.</p>';
     return;
   }
   const vals=[
