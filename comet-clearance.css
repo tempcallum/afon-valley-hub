@@ -1,0 +1,26 @@
+
+/* FAW COMET registration clearance – visible without adding navigation tabs. */
+.comet-clearance-panel{margin:0 0 12px;padding:16px 18px;background:#fff;border:1px solid #d8e4db;border-left:4px solid #d4ba57;border-radius:15px;box-shadow:0 6px 21px rgba(7,55,32,.06)}
+.comet-clearance-panel-title{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.comet-clearance-panel-title h3{font-size:21px;margin:4px 0 0;letter-spacing:-.035em;color:#0a482d}
+.comet-clearance-number{display:inline-flex;justify-content:center;white-space:nowrap;font-size:12px;background:#fff4ca;color:#665010;border:1px solid #ead78d;border-radius:9px;padding:7px 11px;font-weight:900}
+.comet-clearance-panel>p.muted{font-size:12px;line-height:1.6;margin:8px 0 6px;max-width:850px}
+.comet-clearance-pending-list{display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 5px}
+.comet-clearance-person{background:#fff4d8;border:1px solid #e4d3a3;color:#694f13;font-size:12px;font-weight:800;padding:7px 10px;border-radius:9px}
+.comet-clearance-empty{font-size:12px;color:#5c7767;margin:9px 0 2px}
+.comet-clearance-edit{border-top:1px solid #e2e9e4;margin-top:12px;padding-top:9px}
+.comet-clearance-edit summary{font-size:12px;font-weight:950;cursor:pointer;color:#0a603b;padding:6px 0}
+.comet-clearance-controls{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin:12px 0}
+.comet-clearance-controls label{flex:1 1 190px;color:#41624d;font-weight:850;font-size:11px}
+.comet-clearance-controls select{width:100%;min-height:44px;margin:5px 0 0;font-size:13px}
+.comet-clearance-controls button{min-height:44px;flex:0 0 auto}
+.comet-clearance-edit p.muted{font-size:11px;line-height:1.5;margin:9px 0}
+.comet-clearance-foot{border-top:1px solid #e5eee7;margin-top:10px;padding-top:10px;color:#829285;font-size:10px;line-height:1.5}
+.comet-clearance-tag{display:inline-flex;vertical-align:middle;font-size:9px;font-weight:1000;letter-spacing:.025em;white-space:nowrap;border-radius:5px;padding:4px 6px;margin-left:8px}
+.comet-clearance-tag.pending{color:#6b5510;background:#f9edbf;border:1px solid #ecd681}
+.comet-clearance-tag.cleared{color:#09613b;background:#e3f2e7;border:1px solid #b3d9bd}
+.comet-clearance-home-banner{border-radius:12px;border:1px solid #e6d38b;border-left:4px solid #d1aa22;background:#fffae9;padding:13px 16px;color:#624f16;margin:0}
+.comet-clearance-home-banner strong,.comet-clearance-home-banner span{display:block}
+.comet-clearance-home-banner strong{font-size:13px;font-weight:950;margin-bottom:4px}
+.comet-clearance-home-banner span{font-size:11px;line-height:1.55}
+@media(max-width:620px){.comet-clearance-panel{padding:13px}.comet-clearance-controls{flex-direction:column;align-items:stretch}.comet-clearance-controls label,.comet-clearance-controls button{width:100%;flex:auto}.comet-clearance-tag{display:table;margin:4px 0 0}}
