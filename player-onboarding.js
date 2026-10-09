@@ -29,7 +29,7 @@ home=async function(){
     '<div class="hub-setup-rows">'+tasks.map(task=>{
       const complete=Boolean(data[task.key]);
       return '<div class="hub-setup-row '+(complete?'is-done':'')+'">'+
-        '<span class="hub-setup-mark" aria-hidden="true">'+(complete?'✓':String(tasks.indexOf(task)+1))+'</span>'+
+        '<span class="hub-setup-mark" aria-hidden="true">'+(complete?String(tasks.indexOf(task)+1):String(tasks.indexOf(task)+1))+'</span>'+
         '<div class="hub-setup-desc"><strong>'+esc(task.label)+'</strong>'+
         (!complete?'<small>'+esc(task.detail)+'</small>':'')+'</div>'+
         (complete?'<span class="hub-setup-status">Done</span>':
