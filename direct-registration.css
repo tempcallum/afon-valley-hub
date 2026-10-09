@@ -67,3 +67,11 @@
 .direct-reg-under18 .direct-reg-fields input{background:#fff}
 .direct-reg-under18 .direct-reg-privacy{color:#5c634b}
 @media(max-width:600px){.direct-reg-under18{padding:16px 12px}}
+
+/* Quiet archive: Hub-added registrations no longer clutter the active inbox. */
+.direct-reg-inbox-clear{padding:18px 8px 10px;margin:0;color:#456f54!important;font-weight:700}
+.direct-reg-archive{margin-top:14px;padding:11px 13px;border:1px solid #dfe8e1;border-radius:11px;background:#f8faf8}
+.direct-reg-archive summary{cursor:pointer;font-weight:850;color:#446653;font-size:12px;min-height:24px}
+.direct-reg-archive[open] summary{margin-bottom:10px;color:#075b37}
+.direct-reg-archive>.muted{font-size:12px;line-height:1.55;margin:0 0 7px}
+.direct-reg-archive .direct-reg-inbox-row:last-child{border-bottom:0}
