@@ -100,11 +100,17 @@ async function avfcPlayerPolicies(){
  target.querySelectorAll('[data-hub-policy]').forEach(button=>button.onclick=async()=>{
   const item=avfcPlayerDocuments[Number(button.dataset.hubPolicy)];
   if(!item)return;
+  const windowForPolicy=window.open('','_blank');
+  if(windowForPolicy){windowForPolicy.opener=null;windowForPolicy.document.title='Opening Afon Valley policy';}
   button.disabled=true;button.textContent='Opening…';
   const {data,error}=await sb.storage.from('club-documents').createSignedUrl(item.path,90);
   button.disabled=false;button.textContent='Read';
-  if(error||!data?.signedUrl)return alert('This policy could not be opened. Please try again or ask the Chair.');
-  window.open(data.signedUrl,'_blank','noopener,noreferrer');
+  if(error||!data?.signedUrl){
+    if(windowForPolicy)windowForPolicy.close();
+    return alert('This policy could not be opened. Please try again or ask the Chair.');
+  }
+  if(windowForPolicy)windowForPolicy.location.replace(data.signedUrl);
+  else window.location.assign(data.signedUrl);
  });
 }
 
