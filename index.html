@@ -728,7 +728,7 @@ async function teamPicker(mid){
   if(!['chair','manager'].includes(profile.role))return alert('Only the Chair or Team Manager can pick the team.');
   const [{data:fixture,error:fe},{data:ps,error:pe},{data:rs,error:re},{data:lu},{data:lp}]=await Promise.all([
     sb.from('matches').select('*').eq('id',mid).single(),
-    sb.from('players').select('id,name').eq('status','active').order('name'),
+    sb.from('players').select('id,name').eq('status','active').neq('registration_clearance','pending_comet').order('name'),
     sb.from('availability').select('player_id,status,note').eq('match_id',mid),
     sb.from('fixture_lineups').select('*').eq('match_id',mid).maybeSingle(),
     sb.from('fixture_lineup_players').select('*').eq('match_id',mid)
@@ -762,7 +762,7 @@ async function teamPicker(mid){
   const render=()=>{
     const slots=formations[formation],assigned=assignedSet(),yesPlayers=players.filter(p=>responses.get(p.id)==='available'),maybePlayers=players.filter(p=>responses.get(p.id)==='maybe'),noReplyPlayers=players.filter(p=>!responses.has(p.id));
     const selectedRows=[...Object.values(starters),...subs],changed=selectedRows.filter(pid=>responses.get(pid)!=='available'),startCount=Object.values(starters).length;
-    $('#mb').innerHTML='<div class="panel lineup-panel"><div class="head"><div><span class="eyebrow dark">TEAM SELECTION</span><h3>'+esc(fixture.opponent)+'</h3><p class="muted">'+day(fixture.match_date)+' · '+fixtureClock(fixture)+' · Build the team directly from players who confirmed YES.</p></div><div><span class="badge '+(published?'ok':'warn')+'">'+(published?'PUBLISHED':'PRIVATE DRAFT')+'</span><button id="backToResponses" class="btn">Back</button></div></div>'+
+    $('#mb').innerHTML='<div class="panel lineup-panel"><div class="head"><div><span class="eyebrow dark">TEAM SELECTION</span><h3>'+esc(fixture.opponent)+'</h3><p class="muted">'+day(fixture.match_date)+' · '+fixtureClock(fixture)+' · Only active players with eligible COMET clearance appear here. Pending COMET players are excluded.</p></div><div><span class="badge '+(published?'ok':'warn')+'">'+(published?'PUBLISHED':'PRIVATE DRAFT')+'</span><button id="backToResponses" class="btn">Back</button></div></div>'+
       (published?'<div class="success-note"><strong>This team is visible to players.</strong> If you save any changes it automatically returns to a private draft until you publish it again.</div>':'')+
       '<div class="lineup-toolbar"><label>Formation<select id="formationSelect"><option>4-4-2</option><option>4-3-3</option><option>4-2-3-1</option><option>3-5-2</option></select></label><div class="lineup-counts"><span class="badge '+(startCount===11?'ok':'warn')+'">STARTING XI '+startCount+'/11</span><span class="badge">'+subs.length+' SUB'+(subs.length===1?'':'S')+'</span><span class="badge ok">'+yesPlayers.length+' AVAILABLE</span></div></div>'+
       (changed.length?'<div class="lineup-warning">'+changed.length+' selected player'+(changed.length===1?' is':'s are')+' no longer marked YES. Publish is blocked until this is fixed.</div>':'')+
