@@ -59,6 +59,22 @@ drawNav=function(){
  });
 };
 
+
+/* Keep payments near the top and the personal statistics immediately below availability. */
+const avfcPriorHome=home;
+home=async function(){
+ await avfcPriorHome();
+ if(!isPlayerView())return;
+ const area=$('#content'),feature=area?.querySelector('.match-feature'),tiles=area?.querySelector('.dashboard-stats');
+ if(!feature||!tiles)return;
+ area.classList.add('hub-home-compact');
+ feature.insertAdjacentElement('afterend',tiles);
+ const quick=document.createElement('button');
+ quick.type='button';quick.className='hub-home-match-link';quick.textContent='Matchday details, team & directions';
+ feature.appendChild(quick);
+ quick.onclick=()=>{tab='matchday';drawNav();render('matchday')};
+};
+
 const avfcPlayerDocuments=[
  {name:'Code of Conduct',cat:'Playing at Afon Valley',path:'Club Admin/Afon_Valley_FC_Codes_of_Conduct.pdf'},
  {name:'Safeguarding Policy',cat:'Player welfare',path:'Safeguarding/Afon_Valley_FC_Safeguarding_Policy.pdf'},
@@ -171,7 +187,7 @@ async function avfcMatchdayHQ(){
  const a=target.querySelector('#hubMdAvailability');
  if(a)a.onclick=()=>avfcHqGo('availability',match.id);
  const pick=target.querySelector('#hubMdTeamPicker');
- if(pick)pick.onclick=()=>avfcHqGo('availability',match.id);
+ if(pick)pick.onclick=()=>{tab='availability';drawNav();render('availability').then(()=>teamPicker(match.id))};
  const form=target.querySelector('#hubMdSettingsForm');
  if(form){
   form.elements.kit.value=match.matchday_kit||'';
