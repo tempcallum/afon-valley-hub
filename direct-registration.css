@@ -59,3 +59,11 @@
  .direct-reg-value{grid-template-columns:1fr;gap:3px}
  .direct-reg-inbox-row select{width:100%}
 }
+
+/* Safeguarding fields appear only for players aged 16 or 17. */
+.direct-reg-under18{padding:20px 16px;border:1px solid #e1d59b;border-left:4px solid #dbbd55;border-radius:12px;background:#fffdf3;margin-top:20px}
+.direct-reg-under18 h2{color:#65520e!important}
+.direct-reg-under18 h2 span{background:#f8ecc3!important;color:#715a0b!important;border-color:#e1d59b!important}
+.direct-reg-under18 .direct-reg-fields input{background:#fff}
+.direct-reg-under18 .direct-reg-privacy{color:#5c634b}
+@media(max-width:600px){.direct-reg-under18{padding:16px 12px}}
