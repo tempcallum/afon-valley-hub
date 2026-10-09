@@ -109,6 +109,9 @@ async function avfcPlayerPolicies(){
     if(windowForPolicy)windowForPolicy.close();
     return alert('This policy could not be opened. Please try again or ask the Chair.');
   }
+  if(item.name==='Code of Conduct'&&typeof avfcPlayerSetupStep==='function'){
+    await avfcPlayerSetupStep('policies');
+  }
   if(windowForPolicy)windowForPolicy.location.replace(data.signedUrl);
   else window.location.assign(data.signedUrl);
  });
