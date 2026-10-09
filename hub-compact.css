@@ -67,3 +67,17 @@
  .hub-policy-list{padding:0 13px}
  .hub-section-header{padding:17px 14px}
 }
+
+/* Player home: financial position is immediately visible below the next fixture. */
+#content.hub-home-compact>.dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#content.hub-home-compact>.dashboard-stats .identity-metric{display:none}
+#content.hub-home-compact>.dashboard-stats .metric{padding:12px 14px;border-radius:14px}
+#content.hub-home-compact>.dashboard-stats .metric strong{font-size:24px}
+#content.hub-home-compact>.dashboard-stats .metric small{font-size:10px}
+.hub-home-match-link{
+ display:block;width:100%;cursor:pointer;border:0;border-top:1px solid #ffffff24;
+ background:#ffffff0c;color:#f2d24f;text-align:center;padding:11px;
+ font-size:12px;font-weight:900;letter-spacing:.025em;
+}
+.hub-home-match-link:hover{background:#ffffff20}
+.hub-home-match-link:focus-visible{outline:2px solid #f2d24f;outline-offset:-3px}
