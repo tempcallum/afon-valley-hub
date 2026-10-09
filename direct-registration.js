@@ -1,5 +1,5 @@
 
-/* No-login form for new adult players, with a Chair-only registration inbox. */
+/* No-login form for adult-football players aged 16+, with a Chair-only registration inbox. */
 const DIRECT_PLAYER_REG_LINK="https://tempcallum.github.io/afon-valley-hub/?register=player";
 function showDirectPlayerRegistration(){
  for(const id of ['login','shell','totePublic','joinPublic'])document.getElementById(id)?.classList.add('hidden');
@@ -39,6 +39,14 @@ function showDirectPlayerRegistration(){
    '<p>Complete this form so the club can prepare your FAW COMET registration. You do not need a Hub login yet.</p>'+
    '<div class="direct-reg-notice">Sending this form does not confirm your FAW eligibility or automatically enrol you in the Hub.</div></div>'+
    '<form id="directRegForm" class="direct-reg-form">'+fields+
+   '<section id="directGuardianSection" class="direct-reg-section direct-reg-under18 hidden"><h2><span>!</span> Parent or guardian (under 18)</h2>'+
+   '<p class="direct-reg-privacy">Players aged 16 or 17 must provide parent or guardian contact details. Afon Valley will verify safeguarding and any required permissions separately before registration or play. These details are only for club registration and safeguarding.</p>'+
+   '<div class="direct-reg-fields"><label>Parent / guardian name<input type="text" name="guardian_name" maxlength="120"></label>'+
+   '<label>Relationship to player<input type="text" name="guardian_relationship" maxlength="90"></label>'+
+   '<label>Parent / guardian telephone<input type="tel" name="guardian_phone" maxlength="45"></label>'+
+   '<label>Parent / guardian email<input type="email" name="guardian_email" maxlength="200"></label></div>'+
+   '<label class="direct-reg-check"><input type="checkbox" name="guardian_aware"><span>I confirm my parent or guardian is aware I am submitting this registration form and can be contacted by the club.</span></label>'+
+   '<p class="direct-reg-privacy">For under-18s, the club will seek separate parental permission for photographs and relevant communications. This online form is not the official COMET registration or a parental signature.</p></section>'+
    '<section class="direct-reg-section"><h2><span>05</span> Declarations</h2>'+
    '<p class="direct-reg-privacy">Afon Valley FC uses this information to prepare FAW COMET registration and manage club membership. This form is available to the club Chair, and it is not automatically submitted to COMET. Once you become a member, other authorised officials may access relevant club contact and emergency information. For corrections or questions, email <a href="mailto:afonvalleyafc@gmail.com">afonvalleyafc@gmail.com</a>.</p>'+
    '<label class="direct-reg-check"><input type="checkbox" name="consent_privacy" required><span>I understand how my details will be used.</span></label>'+
@@ -52,6 +60,28 @@ function showDirectPlayerRegistration(){
    '<p>You do not need to create a Hub account yet.</p></div></div>'+
    '<p class="direct-reg-foot">Afon Valley FC · Rogerstone, Newport · Est. 2024</p></div></section>');
  const form=document.getElementById('directRegForm'),prev=document.getElementById('directPreviousClub');
+ const dateField=form.elements.date_of_birth,guardian=document.getElementById('directGuardianSection');
+ function yearsOld(value){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;
+  const dob=new Date(value+'T12:00:00Z');
+  if(Number.isNaN(dob.valueOf())||dob.toISOString().slice(0,10)!==value)return null;
+  const today=new Date();let years=today.getUTCFullYear()-dob.getUTCFullYear();
+  if(today.getUTCMonth()<dob.getUTCMonth()||(today.getUTCMonth()===dob.getUTCMonth()&&today.getUTCDate()<dob.getUTCDate()))years--;
+  return years>=0?years:null;
+ }
+ function guardianToggle(){
+  const age=yearsOld(dateField.value),under18=age!==null&&age>=16&&age<18;
+  guardian.classList.toggle('hidden',!under18);
+  for(const name of ['guardian_name','guardian_phone','guardian_email','guardian_relationship','guardian_aware'])form.elements[name].required=under18;
+  const photo=form.elements.photo_consent;
+  if(under18)photo.checked=false;
+  photo.disabled=under18;
+  const photoLabel=photo.closest('label');
+  if(photoLabel)photoLabel.classList.toggle('hidden',under18);
+ }
+ dateField.addEventListener('change',guardianToggle);
+ dateField.addEventListener('input',guardianToggle);
+ guardianToggle();
  document.getElementById('directHistory').onchange=e=>prev.required=e.target.value==='transfer';
  form.onsubmit=async(e)=>{
   e.preventDefault();
@@ -60,7 +90,9 @@ function showDirectPlayerRegistration(){
   btn.disabled=true;btn.textContent='Sending…';msg.textContent='';
   const fd=new FormData(form),body={};
   for(const [k,v] of fd.entries())body[k]=String(v);
-  for(const k of ['consent_privacy','confirm_correct','photo_consent'])body[k]=fd.has(k);
+  for(const k of ['consent_privacy','confirm_correct','photo_consent','guardian_aware'])body[k]=fd.has(k);
+  const age=yearsOld(String(body.date_of_birth||''));
+  if(age===null||age<16){msg.textContent='This form is for players aged 16 or over. Please contact the club.';btn.disabled=false;btn.textContent='Send registration to the club';return}
   try{
    const response=await fetch('https://isljjtspkqsyhkjmmhiq.supabase.co/functions/v1/public-direct-player-registration',{
     method:'POST',
@@ -135,7 +167,7 @@ renderAdminExtras=async function(){
    town:'Town / city',postcode:'Postcode',country:'Country',football_history:'Previous FAW registration',
    previous_club:'Previous club',comet_id:'COMET player ID',emergency_name:'Emergency contact',
    emergency_phone:'Emergency telephone',emergency_relationship:'Relationship',
-   photo_consent:'Photo consent'
+   photo_consent:'Photo consent',guardian_name:'Parent / guardian',guardian_relationship:'Guardian relationship',guardian_phone:'Guardian telephone',guardian_email:'Guardian email',guardian_aware:'Parent / guardian informed',under_18:'Player is under 18',guardian_review_required:'Safeguarding review required'
   };
   const entries=Object.entries(labels);
   const value=k=>r.details?.[k]===true?'Yes':r.details?.[k]===false?'No':String(r.details?.[k]||'—');
