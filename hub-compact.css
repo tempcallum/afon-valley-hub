@@ -142,3 +142,26 @@
  .hub-setup-row{min-height:49px}
  .hub-setup-bottom{padding:8px 12px}
 }
+
+/* Chair's single-tap share entry, compact and separate from FAW registration. */
+.chair-hub-share{
+ display:flex;align-items:center;justify-content:space-between;gap:13px;
+ padding:13px 16px;margin:0;
+ background:#f5faf6;border:1px solid #cfe2d4;border-left:4px solid #dfc24f;
+ border-radius:12px;
+}
+.chair-hub-share-text{flex:1;min-width:0}
+.chair-hub-share strong,.chair-hub-share small,.chair-hub-share-admin strong,.chair-hub-share-admin small{display:block}
+.chair-hub-share strong,.chair-hub-share-admin strong{font-size:14px;color:#083f28;font-weight:950}
+.chair-hub-share small,.chair-hub-share-admin small{font-size:11px;line-height:1.5;color:#61776a;margin-top:3px}
+.chair-hub-share .btn,.chair-hub-share-admin .btn{flex:none;min-height:41px;white-space:nowrap;font-weight:900;font-size:12px}
+.chair-hub-share .btn.copied,.chair-hub-share-admin .btn.copied{background:#086a3d}
+.chair-hub-share-admin{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ margin-top:15px;padding-top:15px;border-top:1px solid #dae8dc;
+}
+.chair-hub-share-admin>div{min-width:0;flex:1}
+@media(max-width:440px){
+ .chair-hub-share,.chair-hub-share-admin{align-items:stretch;flex-direction:column}
+ .chair-hub-share .btn,.chair-hub-share-admin .btn{width:100%}
+}
