@@ -1,0 +1,54 @@
+
+/* Previous results: compact, readable on phones, no extra main tab. */
+.avfc-results-nav{margin-bottom:15px}
+.avfc-results-panel{background:#fff;border:1px solid #dce8de;border-radius:16px;padding:16px;box-shadow:0 8px 22px rgba(6,56,29,.055)}
+.avfc-results-title{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:11px}
+.avfc-results-title h3{margin:4px 0;font-size:22px;color:#073c27;letter-spacing:-.025em}
+.avfc-results-title p{font-size:12px;color:#657b6b;margin:0}
+.avfc-results-count{flex:none;border-radius:10px;background:#eaf3ec;color:#0d6440;font-weight:850;font-size:11px;padding:8px 10px}
+.avfc-results-form-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.avfc-results-form-summary>div{padding:10px 9px;background:#f3f7f4;border-radius:10px;border:1px solid #e0eae3;display:flex;align-items:center;justify-content:center;gap:7px}
+.avfc-results-form-summary b{font-size:17px;color:#075b3a}
+.avfc-results-form-summary small{font-size:11px;color:#657969}
+.avfc-results-game{display:grid;grid-template-columns:81px minmax(0,1fr) 84px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eaf0eb}
+.avfc-results-game:last-child{border:0}
+.avfc-results-date{color:#456855;font-size:11px;font-weight:900}
+.avfc-results-date small{display:block;margin-top:4px;color:#879589;font-size:10px;font-weight:650}
+.avfc-results-opponent{min-width:0}
+.avfc-results-opponent strong{display:block;font-size:13px;color:#103e28;line-height:1.35;overflow-wrap:anywhere}
+.avfc-results-opponent small{display:block;color:#849286;font-size:10px;margin-top:4px;line-height:1.35}
+.avfc-results-opponent .avfc-results-awards{color:#416e51}
+.avfc-results-score{display:flex;flex-direction:column;align-items:end;justify-content:center;gap:5px}
+.avfc-results-score b{color:#113d2a;font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.avfc-results-outcome{display:inline-block;font-weight:900;font-size:10px;letter-spacing:.03em;padding:4px 7px;border-radius:7px}
+.avfc-results-outcome.w{color:#095f38;background:#dff1e6}
+.avfc-results-outcome.d{color:#69551d;background:#fff0ca}
+.avfc-results-outcome.l{color:#8b4334;background:#f8e9e5}
+.avfc-results-empty{font-size:12px;color:#77877a;padding:12px 0}
+.avfc-results-editor{margin-top:17px;padding:13px;background:#f9fbf9;border:1px solid #dce9df;border-radius:11px}
+.avfc-results-editor summary{cursor:pointer;font-size:13px;font-weight:900;color:#075b3d}
+.avfc-results-editor form{display:grid;gap:12px;margin-top:13px}
+.avfc-results-editor label{display:grid;gap:5px;font-size:12px;font-weight:850;color:#315a40}
+.avfc-results-editor input,.avfc-results-editor select{width:100%;min-width:0;min-height:43px;border:1px solid #c5d7ca;border-radius:8px;padding:9px 12px;background:#fff;color:#153c29;font-size:13px}
+.avfc-results-score-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.avfc-results-editor .muted{margin:0;font-size:11px;line-height:1.6}
+.avfc-results-editor button[type=submit]{font-weight:900}
+.avfc-results-footnote{margin:17px 0 0;padding-top:11px;border-top:1px solid #e6eee8;font-size:11px;line-height:1.5;color:#758578}
+.avfc-results-home{display:flex;justify-content:space-between;align-items:center;gap:13px;background:#fff;border:1px solid #dce8de;border-radius:12px;padding:11px 14px}
+.avfc-results-home>div:first-child{min-width:0;flex:1}
+.avfc-results-home>div:first-child small{display:block;letter-spacing:.07em;font-size:9px;font-weight:900;color:#598067;margin-bottom:4px}
+.avfc-results-home>div:first-child strong{display:block;font-size:13px;color:#12402a;line-height:1.35}
+.avfc-results-home>div:first-child span{display:block;margin-top:4px;color:#657a6c;font-size:11px;line-height:1.45}
+.avfc-results-home-actions{display:flex;flex:none;flex-direction:column;align-items:end;gap:7px}
+.avfc-results-home-link{border:0;background:transparent;padding:3px 0;color:#08643d;font-size:11px;font-weight:900;text-decoration:underline;cursor:pointer}
+@media(max-width:490px){
+ .avfc-results-panel{padding:13px}
+ .avfc-results-title h3{font-size:20px}
+ .avfc-results-game{grid-template-columns:64px minmax(0,1fr) 65px;gap:7px}
+ .avfc-results-date{font-size:10px}
+ .avfc-results-opponent strong{font-size:12px}
+ .avfc-results-score b{font-size:17px}
+ .avfc-results-count{font-size:10px;padding:6px}
+ .avfc-results-home{align-items:start}
+ .avfc-results-home-actions{gap:10px}
+}
