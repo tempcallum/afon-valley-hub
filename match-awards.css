@@ -1,0 +1,51 @@
+
+/* Manual club-selected match awards – understated and phone friendly. */
+.avfc-awards-panel{margin-top:16px;background:#fff;border:1px solid #dfe8e1;border-radius:15px;overflow:hidden;box-shadow:0 7px 22px rgba(7,55,33,.05);padding:18px}
+.avfc-awards-heading{display:flex;align-items:start;justify-content:space-between;gap:15px}
+.avfc-awards-heading h3{font-size:21px;letter-spacing:-.025em;color:#093f29;margin:5px 0}
+.avfc-awards-heading .muted{font-size:12px;line-height:1.45;margin:3px 0 10px}
+.avfc-awards-fixture-count{background:#eaf3ec;color:#0a613c;border-radius:8px;padding:7px 10px;white-space:nowrap;font-size:11px;font-weight:900}
+.avfc-awards-editor{background:#f7faf7;border:1px solid #dce9e0;padding:12px 14px;margin:13px 0 18px;border-radius:11px}
+.avfc-awards-editor summary{font-size:13px;color:#075b37;font-weight:900;cursor:pointer}
+.avfc-awards-form{display:grid;gap:13px;margin-top:14px}
+.avfc-awards-form label{display:grid;gap:6px;font-size:12px;font-weight:850;color:#254a34}
+.avfc-awards-form select{font:inherit;font-size:13px;border:1px solid #bdcec2;border-radius:9px;padding:11px 30px 11px 12px;width:100%;height:44px;background:#fff;color:#193b29;min-width:0}
+.avfc-awards-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.avfc-awards-actions{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+.avfc-awards-actions .btn{font-weight:900}
+.avfc-awards-actions .muted{font-size:11px;line-height:1.4;flex:1}
+.avfc-awards-history{border-top:1px solid #e5eee7;padding-top:14px}
+.avfc-awards-history h4{font-size:15px;color:#073f29;margin:0 0 8px}
+.avfc-awards-history>.muted{font-size:12px}
+.avfc-awards-history-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid #edf1ed;align-items:center}
+.avfc-awards-history-row:last-child{border-bottom:0}
+.avfc-awards-history-row>div strong{display:block;font-size:12px;line-height:1.35;color:#163f2b}
+.avfc-awards-history-row>div small{display:block;color:#748478;font-size:10px;margin-top:4px}
+.avfc-awards-history-row>span{font-size:11px;font-weight:700;color:#294c37;line-height:1.4;overflow-wrap:anywhere}
+.avfc-awards-history-row>span b{font-size:9px;padding:3px 5px;border-radius:5px;background:#e7f2e9;color:#0b6841;margin-right:3px}
+.avfc-awards-history-row>span:last-child b{background:#fbf0c7;color:#745918}
+.avfc-awards-leaderboard{margin-top:11px;border:1px solid #e2ebe4;border-radius:10px;padding:9px 12px}
+.avfc-awards-leaderboard summary{font-weight:900;font-size:12px;color:#075b37;cursor:pointer;padding:5px 0}
+.avfc-awards-leader-row{display:grid;grid-template-columns:minmax(0,1fr) 58px 58px;gap:9px;align-items:center;padding:9px 2px;border-bottom:1px solid #ecf1ed;font-size:12px}
+.avfc-awards-leader-row.header{color:#6b8373;font-size:10px;font-weight:950;text-transform:uppercase}
+.avfc-awards-leader-row strong{text-align:center;font-size:13px;color:#164b31}
+.avfc-awards-leader-row:last-child{border-bottom:0}
+.avfc-awards-disclaimer{font-size:11px;line-height:1.5;color:#6f7d72;margin:13px 0 0}
+.avfc-award-col{background:#edf6ee!important;white-space:nowrap}
+.avfc-award-stat-cell{text-align:center;font-weight:850;color:#126a41}
+.avfc-award-stats-note{font-size:11px;margin:10px 0 0}
+.comet-home-tile.avfc-award-home-motm{border-color:#b6d6bd;background:#eff7f0}
+.comet-home-tile.avfc-award-home-dotd{border-color:#ead99a;background:#fff9e8}
+@media(max-width:570px){
+ .avfc-awards-panel{padding:14px}
+ .avfc-awards-heading h3{font-size:19px}
+ .avfc-awards-heading{gap:8px}
+ .avfc-awards-fixture-count{font-size:10px;padding:7px}
+ .avfc-awards-fields{grid-template-columns:1fr}
+ .avfc-awards-editor{padding:12px}
+ .avfc-awards-history-row{grid-template-columns:1fr 1fr;gap:7px;padding:12px 0}
+ .avfc-awards-history-row>div{grid-column:span 2}
+ .avfc-awards-history-row>span{font-size:12px}
+ .avfc-awards-actions{align-items:stretch}
+ .avfc-awards-actions .btn{width:100%}
+}
