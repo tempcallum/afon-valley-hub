@@ -53,7 +53,7 @@ function avfcAwardsPlayerOptions(players){
 }
 async function avfcRenderClubAwards(){
  const target=$('#content'),stats=$('#cometStatsBody'),chooser=$('#cometSeason');
- if(!target||!stats||!chooser)return;
+ if(!target||!stats)return;
  const response=await Promise.all([
   sb.rpc('club_match_awards_summary'),
   sb.from('matches').select('id,opponent,match_date,home_away').order('match_date',{ascending:false}).limit(250),
@@ -76,7 +76,7 @@ async function avfcRenderClubAwards(){
   record[a.award_type]=Number(a.player_id);
  }
  avfcAwardsAddCometColumns(totals);
- chooser.addEventListener('change',()=>{
+ if(chooser)chooser.addEventListener('change',()=>{
   if(!target.isConnected)return;
   // The original COMET view replaces its table on every season change.
   requestAnimationFrame(()=>avfcAwardsAddCometColumns(totals));
@@ -122,7 +122,7 @@ async function avfcRenderClubAwards(){
  const leaderboard=panel.querySelector('#avfcAwardLeaderBody');
  if(leaderboard){
   function leaderView(){
-   const season=chooser.value,playersForSeason=totals.filter(t=>t.season===season)
+   const season=chooser?.value||avfcAwardsSeason(new Date()),playersForSeason=totals.filter(t=>t.season===season)
     .sort((a,b)=>Number(b.motm_count)-Number(a.motm_count)||Number(b.dotd_count)-Number(a.dotd_count)||a.player_name.localeCompare(b.player_name));
    leaderboard.innerHTML=playersForSeason.length?
     '<div class="avfc-awards-leader-row header"><span>Player</span><span>MOTM</span><span>DOTD</span></div>'+
@@ -130,7 +130,7 @@ async function avfcRenderClubAwards(){
       '<strong>'+Number(a.motm_count)+'</strong><strong>'+Number(a.dotd_count)+'</strong></div>').join(''):
     '<p class="muted">No awards for this season yet.</p>';
   }
-  chooser.addEventListener('change',leaderView);leaderView();
+  if(chooser)chooser.addEventListener('change',leaderView);leaderView();
  }
  const form=panel.querySelector('#avfcAwardsForm');
  if(!form)return;
