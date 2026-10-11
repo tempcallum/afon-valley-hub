@@ -52,3 +52,6 @@
  .avfc-results-home{align-items:start}
  .avfc-results-home-actions{gap:10px}
 }
+
+/* All three subtabs should remain in one row on narrow screens. */
+.availability-switch:has(> [data-avfc-results]),.availability-switch.avfc-results-nav{grid-template-columns:repeat(3,minmax(0,1fr))}
