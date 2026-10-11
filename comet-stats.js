@@ -31,7 +31,7 @@ async function officialStats(){
    target.classList.remove('empty');
    target.innerHTML='<div class="dashboard-stats"><div class="metric"><span>PLAYERS</span><strong>'+selected.length+'</strong></div><div class="metric"><span>PLAYER APPEARANCES</span><strong>'+appearances+'</strong></div><div class="metric"><span>PLAYER GOALS</span><strong>'+goals+'</strong></div><div class="metric"><span>YELLOW / RED</span><strong>'+yellows+' / '+reds+'</strong></div></div>'+
      '<div class="table"><table><thead><tr><th>Player</th><th>Apps</th><th>Starts</th><th>Goals</th><th>Yellows</th><th>Reds</th><th>Minutes</th></tr></thead><tbody>'+
-     selected.map(x=>'<tr><td><strong>'+esc(x.person_name)+'</strong></td><td>'+Number(x.appearances||0)+'</td><td>'+Number(x.starts||0)+'</td><td>'+Number(x.goals||0)+'</td><td>'+Number(x.yellows||0)+'</td><td>'+Number(x.reds||0)+'</td><td>'+Number(x.minutes_played||0)+'</td></tr>').join('')+
+     selected.map(x=>'<tr data-comet-person="'+Number(x.person_id)+'"><td><strong>'+esc(x.person_name)+'</strong></td><td>'+Number(x.appearances||0)+'</td><td>'+Number(x.starts||0)+'</td><td>'+Number(x.goals||0)+'</td><td>'+Number(x.yellows||0)+'</td><td>'+Number(x.reds||0)+'</td><td>'+Number(x.minutes_played||0)+'</td></tr>').join('')+
      '</tbody></table></div><p class="muted">Official appearance-record totals only. League standings and match-event statistics will follow when those COMET report formats have been checked.</p>';
  }
  $('#cometSeason').onchange=display;display();
