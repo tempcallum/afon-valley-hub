@@ -1,0 +1,41 @@
+
+/* Small Society Lottery registration: clean legal details, no extra main navigation. */
+.tote-registration-public{margin:13px 0 15px;background:#f7fbf8;border:1px solid #bddbc4;border-radius:13px;overflow:hidden;color:#193c29}
+.tote-registration-verified{background:#0c5636;padding:10px 14px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
+.tote-registration-verified strong,.tote-registration-verified span{color:white;font-size:12px;font-weight:900}
+.tote-registration-verified span{color:#e2ecdc;font-size:10px}
+.tote-registration-public-details{display:flex;gap:6px 20px;flex-wrap:wrap;padding:12px 14px 5px}
+.tote-registration-public-details>span{font-size:11px;color:#486651}
+.tote-registration-public-details strong{color:#0a4e31}
+.tote-registration-public p{font-size:11px;line-height:1.55;margin:4px 14px 10px;color:#55705d}
+.tote-registration-public a{color:#086a40;font-weight:900;text-decoration:underline}
+.tote-reg-chair{border:1px solid #c9e0ce;border-left:4px solid #d8c057;padding:16px;background:#fff}
+.tote-reg-heading{display:flex;align-items:start;justify-content:space-between;gap:10px}
+.tote-reg-heading h3{font-size:20px;line-height:1.2;margin:3px 0 4px;color:#113d27}
+.tote-reg-heading p{color:#627969;font-size:11px;line-height:1.45;margin:0}
+.tote-reg-heading .badge{flex:none}
+.tote-reg-id{background:#f5faf5;border:1px solid #dce9e0;border-radius:10px;margin:14px 0 10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tote-reg-id small,.tote-reg-id strong{display:block}
+.tote-reg-id small{font-size:10px;color:#607669;margin-bottom:4px}
+.tote-reg-id strong{color:#0a452b;font-size:15px;letter-spacing:.015em}
+.tote-reg-id .btn{padding:8px 13px;min-height:37px;font-size:12px;font-weight:900}
+.tote-reg-file-row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:10px 0}
+.tote-reg-file-row span{font-size:11px;color:#75877a}
+.tote-reg-file-row .btn{font-size:12px;padding:8px 12px;font-weight:850}
+#toteRegMessage{font-size:11px;margin:5px 0 9px;color:#356947}
+.tote-reg-checklist{border-top:1px solid #e1eae3;margin-top:12px;padding-top:10px}
+.tote-reg-checklist summary{font-size:12px;font-weight:900;color:#075a38;cursor:pointer}
+.tote-reg-checklist>div{margin:11px 0}
+.tote-reg-check{display:flex;align-items:center;gap:12px;padding:6px 0;font-size:12px;color:#365e43}
+.tote-reg-check>span:first-child{min-width:46px;display:inline-grid;place-items:center;border-radius:6px;font-size:10px;font-weight:900;padding:5px 6px}
+.tote-reg-check>span.passed{background:#e5f3e7;color:#096c44}
+.tote-reg-check>span.missing{background:#fff2d1;color:#755610}
+.tote-reg-checklist p{font-size:11px;line-height:1.5;color:#6b7b6d;margin:8px 0}
+.tote-reg-hold{background:#f9f5e8;color:#65551e;font-size:11px;line-height:1.45;border-radius:9px;padding:10px 12px;margin:12px 0 0}
+@media(max-width:500px){
+ .tote-reg-heading h3{font-size:17px}
+ .tote-reg-chair{padding:13px}
+ .tote-reg-file-row{align-items:stretch}
+ .tote-reg-file-row .btn{flex:1;min-height:41px}
+ .tote-registration-public-details{flex-direction:column;gap:4px}
+}
