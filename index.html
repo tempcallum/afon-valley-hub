@@ -1342,7 +1342,17 @@ async function tote(){
     if(!confirm('Reopen this order for another Lloyds check? No tickets will be issued until you verify it again.'))return;
     try{await toteAdminApi({action:'reopen',order_id:b.dataset.bankReopen});tote()}catch(err){alert(err.message)}
   });
-  $('#content').querySelectorAll('[data-tote-pay]').forEach(b=>b.onclick=async()=>{if(!confirm('Confirm this winner has actually been paid?'))return;const {error}=await sb.rpc('mark_tote_payout_paid',{p_payout_id:b.dataset.totePay,p_notes:null});error?alert(error.message):tote()});
+  $('#content').querySelectorAll('[data-tote-pay]').forEach(b=>b.onclick=async()=>{
+    const reference=prompt('Enter the payout bank reference or receipt record. Only continue once the winner has actually been paid:');
+    if(reference===null)return;
+    const note=reference.trim();
+    if(note.length<6||note.length>500)return alert('Enter a payment reference or receipt note between 6 and 500 characters.');
+    if(!confirm('Have you verified that the prize has LEFT the club bank account? This will record the prize as PAID.'))return;
+    b.disabled=true;b.textContent='Recording…';
+    const {error}=await sb.rpc('mark_tote_payout_paid',{p_payout_id:b.dataset.totePay,p_notes:note});
+    if(error){b.disabled=false;b.textContent='Mark paid';alert(error.message);return}
+    tote();
+  });
   $('#content').querySelectorAll('[data-tote-alert]').forEach(b=>b.onclick=async()=>{const {error}=await sb.rpc('resolve_tote_alert',{p_alert_id:b.dataset.toteAlert});error?alert(error.message):tote()});
   if($('#downloadToteReturns'))$('#downloadToteReturns').onclick=()=>{const cols=['Draw','Draw date','Gross sales','Club proceeds','Weekly prize','Jackpot added','Jackpot total','Rollover out','Jackpot number','Jackpot won'];const lines=[cols.join(',')].concat(drawHistory.map(h=>[h.draw_number,new Date(h.draw_at).toISOString(),(h.sales_pence/100).toFixed(2),(h.club_share_pence/100).toFixed(2),(h.weekly_prize_pence/100).toFixed(2),(h.jackpot_added_pence/100).toFixed(2),(h.jackpot_total_pence/100).toFixed(2),(h.rollover_out_pence/100).toFixed(2),h.jackpot_number||'',h.jackpot_winning_ticket_id?'Yes':'No'].join(',')));const blob=new Blob([lines.join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='afon-valley-tote-returns.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
   if($('#toteSettingsForm'))$('#toteSettingsForm').onsubmit=async e=>{
