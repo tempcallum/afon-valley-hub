@@ -74,7 +74,21 @@ tote=async function(){
    '<p class="tote-reg-hold">'+(s.payments_enabled?
      'Live ticket sales are enabled in settings. Verify all checks immediately.':
      'Ticket sales are still switched off; receiving the council certificate does not start sales automatically.')+'</p>';
- area.insertAdjacentElement('afterbegin',panel);
+ // Keep the Council record accessible without filling the operational screen.
+ const details=document.createElement('details');
+ details.className='tote-reg-disclosure';
+ const summary=document.createElement('summary');
+ summary.textContent='Registration details & launch checks';
+ details.appendChild(summary);
+ panel.querySelector('.tote-reg-heading').insertAdjacentElement('afterend',details);
+ for(const selector of ['.tote-reg-id','.tote-reg-file-row','#toteRegMessage','.tote-reg-checklist','.tote-reg-hold']){
+   const item=panel.querySelector(selector);
+   if(item)details.appendChild(item);
+ }
+ panel.classList.add('tote-reg-chair-compact');
+ const hero=area.querySelector('.tote-internal-hero');
+ if(hero)hero.insertAdjacentElement('afterend',panel);
+ else area.insertAdjacentElement('afterbegin',panel);
  panel.querySelector('#toteCopyRegistration').onclick=e=>copyText(s.society_registration_number||avfcRegNumber,e.currentTarget);
  const input=panel.querySelector('#toteCertificateFile');
  const status=panel.querySelector('#toteRegMessage');
