@@ -1,0 +1,106 @@
+/**
+ * Afon Valley FC Tote — free Gmail ticket delivery.
+ *
+ * INSTALL AS afonvalleyafc@gmail.com
+ * 1. Open https://script.google.com/home/projects/create while signed into the club mailbox.
+ * 2. Replace all code in Code.gs with the code provided by Chair -> Money -> Tote.
+ * 3. Save, choose connectAfonValleyTote, then press Run.
+ * 4. Review Google's permissions; the script needs permission to send email and call the Hub.
+ * 5. Return to the Hub and refresh the Gmail connection status.
+ *
+ * The private access key is copied from Chair Hub into this PRIVATE Apps Script project.
+ * Never share a screenshot of this script or publish its source.
+ */
+const TOTE_API = 'https://isljjtspkqsyhkjmmhiq.supabase.co/functions/v1/tote-gmail-bridge';
+const TOTE_SECRET = 'PASTE_PRIVATE_KEY_FROM_HUB';
+const CLUB_EMAIL = 'afonvalleyafc@gmail.com';
+
+function toteCall_(action, extra) {
+  const data = Object.assign({ action: action, token: TOTE_SECRET }, extra || {});
+  const response = UrlFetchApp.fetch(TOTE_API, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(data),
+    muteHttpExceptions: true,
+    followRedirects: true
+  });
+  const result = JSON.parse(response.getContentText());
+  if (response.getResponseCode() < 200 || response.getResponseCode() >= 300) {
+    throw new Error('Hub rejected ' + action + ': ' + (result.error || response.getResponseCode()));
+  }
+  return result;
+}
+function checkToteAccount_() {
+  const sender = String(Session.getEffectiveUser().getEmail() || '').toLowerCase();
+  if (sender !== CLUB_EMAIL) {
+    throw new Error('Sign into ' + CLUB_EMAIL + ' before running this script. Current account: ' + sender);
+  }
+  if (!/^[a-f0-9]{64}$/.test(TOTE_SECRET)) {
+    throw new Error('Copy the setup code from the Chair-only Hub. The private key has not been inserted.');
+  }
+}
+function connectAfonValleyTote() {
+  checkToteAccount_();
+  const test = toteCall_('test');
+  if (test.to !== CLUB_EMAIL) throw new Error('Unexpected test recipient; aborting.');
+  if (MailApp.getRemainingDailyQuota() < 1) throw new Error('Gmail daily quota reached. Try tomorrow.');
+  MailApp.sendEmail({
+    to: test.to,
+    subject: test.subject,
+    body: test.body,
+    name: 'Afon Valley FC Tote',
+    replyTo: CLUB_EMAIL
+  });
+  toteCall_('test_ack', { sent: true, quota_remaining: MailApp.getRemainingDailyQuota() });
+  const triggers = ScriptApp.getProjectTriggers();
+  for (const trigger of triggers) {
+    if (trigger.getHandlerFunction() === 'processAfonValleyToteEmails') ScriptApp.deleteTrigger(trigger);
+  }
+  ScriptApp.newTrigger('processAfonValleyToteEmails').timeBased().everyMinutes(5).create();
+  processAfonValleyToteEmails();
+  Logger.log('Connected. Open the Hub Chair Tote screen to see the Gmail connection status.');
+}
+function processAfonValleyToteEmails() {
+  checkToteAccount_();
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) return;
+  try {
+    const quota = MailApp.getRemainingDailyQuota();
+    const response = toteCall_('poll', { quota_remaining: quota });
+    if (!response.emails || !response.emails.length) return;
+    const properties = PropertiesService.getScriptProperties();
+    for (const email of response.emails) {
+      const id = String(email.id);
+      const sentFlag = 'tote-sent-' + id;
+      try {
+        if (quota < 1) throw new Error('No Gmail daily recipients remaining.');
+        // Keep an idempotency marker to avoid duplicate mail after a temporary acknowledgement failure.
+        if (properties.getProperty(sentFlag) !== 'yes') {
+          MailApp.sendEmail({
+            to: email.recipient_email,
+            subject: email.subject,
+            body: email.body_text,
+            name: 'Afon Valley FC Tote',
+            replyTo: CLUB_EMAIL
+          });
+          properties.setProperty(sentFlag, 'yes');
+        }
+        const ack = toteCall_('ack', { id: id, claim: email.claim, success: true });
+        if (ack.ok) properties.deleteProperty(sentFlag);
+        else throw new Error('Acknowledgement was not accepted. Will retry without resending email.');
+      } catch (error) {
+        // If an email was sent but the Hub was offline, retain marker for next retry.
+        if (properties.getProperty(sentFlag) === 'yes') throw error;
+        try {
+          toteCall_('ack', { id: id, claim: email.claim, success: false, error: String(error).slice(0, 220) });
+        } catch (ackError) {
+          Logger.log('Could not record Gmail send failure: ' + String(ackError));
+        }
+        Logger.log('Ticket email delivery failed: ' + String(error));
+        if (String(error).includes('quota')) break;
+      }
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
