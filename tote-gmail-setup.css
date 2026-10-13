@@ -1,0 +1,34 @@
+
+/* Chair-only Gmail ticket email connection, uncluttered and mobile-friendly */
+.tote-gmail-setup{padding:16px;border:1px solid #d7e5da;border-left:4px solid #e1c456;border-radius:13px}
+.tote-gmail-head{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.tote-gmail-head h3{font-size:19px;margin:4px 0;color:#0c4b2f}
+.tote-gmail-head p{font-size:12px;line-height:1.5;margin:0;color:#66796b}
+.tote-gmail-head .badge{white-space:nowrap}
+.tote-gmail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.tote-gmail-metrics>div{background:#f5f9f6;border:1px solid #e0ebe2;padding:10px;border-radius:10px}
+.tote-gmail-metrics span,.tote-gmail-metrics strong{display:block}
+.tote-gmail-metrics span{font-size:10px;color:#728776}
+.tote-gmail-metrics strong{font-size:14px;color:#105435;margin-top:5px}
+.tote-gmail-last{font-size:10px;color:#718477;margin:10px 0}
+.tote-gmail-error{color:#913f39;background:#fcf0ed;padding:9px 11px;border-radius:8px;font-size:11px}
+.tote-gmail-steps{margin-top:12px;border-top:1px solid #e6ede7;padding-top:11px}
+.tote-gmail-steps summary{cursor:pointer;color:#0a643c;font-size:12px;font-weight:900}
+.tote-gmail-steps ol{margin:12px 0;padding-left:21px;color:#3d5848}
+.tote-gmail-steps li{font-size:12px;line-height:1.6;margin:7px 0}
+.tote-gmail-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 8px}
+.tote-gmail-actions .btn{min-height:40px;font-size:11px;font-weight:850;display:inline-flex;align-items:center}
+.tote-gmail-private{font-size:11px;color:#8c6b1e;background:#fff8e9;border-radius:8px;padding:9px 11px;margin-top:9px;line-height:1.5}
+.tote-gmail-safety{font-size:11px;line-height:1.5;color:#69786d;margin:12px 0 0}
+.tote-gmail-action-message{font-size:11px;color:#075b35;margin:6px 0}
+@media(max-width:500px){
+ .tote-gmail-setup{padding:13px}
+ .tote-gmail-head h3{font-size:17px}
+ .tote-gmail-head{flex-wrap:wrap}
+ .tote-gmail-metrics{gap:5px}
+ .tote-gmail-metrics>div{padding:8px 5px}
+ .tote-gmail-metrics span{font-size:9px}
+ .tote-gmail-metrics strong{font-size:12px}
+ .tote-gmail-actions{flex-direction:column}
+ .tote-gmail-actions .btn{width:100%;justify-content:center}
+}
