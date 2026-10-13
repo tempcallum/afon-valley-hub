@@ -1,34 +1,27 @@
-
-/* Chair-only Gmail ticket email connection, uncluttered and mobile-friendly */
-.tote-gmail-setup{padding:16px;border:1px solid #d7e5da;border-left:4px solid #e1c456;border-radius:13px}
-.tote-gmail-head{display:flex;align-items:start;justify-content:space-between;gap:12px}
-.tote-gmail-head h3{font-size:19px;margin:4px 0;color:#0c4b2f}
-.tote-gmail-head p{font-size:12px;line-height:1.5;margin:0;color:#66796b}
-.tote-gmail-head .badge{white-space:nowrap}
-.tote-gmail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
-.tote-gmail-metrics>div{background:#f5f9f6;border:1px solid #e0ebe2;padding:10px;border-radius:10px}
-.tote-gmail-metrics span,.tote-gmail-metrics strong{display:block}
-.tote-gmail-metrics span{font-size:10px;color:#728776}
-.tote-gmail-metrics strong{font-size:14px;color:#105435;margin-top:5px}
-.tote-gmail-last{font-size:10px;color:#718477;margin:10px 0}
-.tote-gmail-error{color:#913f39;background:#fcf0ed;padding:9px 11px;border-radius:8px;font-size:11px}
-.tote-gmail-steps{margin-top:12px;border-top:1px solid #e6ede7;padding-top:11px}
-.tote-gmail-steps summary{cursor:pointer;color:#0a643c;font-size:12px;font-weight:900}
-.tote-gmail-steps ol{margin:12px 0;padding-left:21px;color:#3d5848}
-.tote-gmail-steps li{font-size:12px;line-height:1.6;margin:7px 0}
-.tote-gmail-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 8px}
-.tote-gmail-actions .btn{min-height:40px;font-size:11px;font-weight:850;display:inline-flex;align-items:center}
-.tote-gmail-private{font-size:11px;color:#8c6b1e;background:#fff8e9;border-radius:8px;padding:9px 11px;margin-top:9px;line-height:1.5}
-.tote-gmail-safety{font-size:11px;line-height:1.5;color:#69786d;margin:12px 0 0}
-.tote-gmail-action-message{font-size:11px;color:#075b35;margin:6px 0}
+/* Quiet operational email health: diagnostic tools are collapsed by default. */
+.tote-email-strip{border:1px solid #d8e7db;background:#f7fbf8;padding:12px 15px;border-radius:13px;color:#103b28}
+.tote-email-strip.needs-attention{border-color:#e5d28c;background:#fff9eb}
+.tote-email-strip-main{display:flex;align-items:center;gap:10px;min-width:0}
+.tote-email-dot{width:9px;height:9px;background:#14804c;border-radius:50%;flex:none}
+.tote-email-strip.needs-attention .tote-email-dot{background:#be8c25}
+.tote-email-copy{min-width:0;flex:1}
+.tote-email-copy strong,.tote-email-copy small{display:block}
+.tote-email-copy strong{font-size:11px;color:#075337;letter-spacing:.06em;font-weight:900}
+.tote-email-copy small{font-size:11px;color:#5e7565;line-height:1.4;margin-top:3px}
+.tote-email-count{display:flex;align-items:baseline;gap:3px;color:#15583b;font-size:19px;font-weight:900;font-variant-numeric:tabular-nums;flex:none}
+.tote-email-count span{font-size:10px;font-weight:650;color:#718878}
+.tote-email-extra,.tote-email-error{font-size:11px;margin:9px 0 0;color:#906019;line-height:1.4}
+.tote-email-error{color:#9d382f}
+.tote-email-tools{border-top:1px solid #e4eee6;margin-top:9px;padding-top:7px;color:#687e6c;font-size:11px}
+.tote-email-tools>summary{cursor:pointer;font-size:11px;font-weight:750;color:#4c7860;line-height:1.6}
+.tote-email-tools>p{margin:8px 0;line-height:1.5}
+.tote-email-tool-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.tote-email-tool-actions .btn{min-height:36px;font-size:11px;padding:8px 12px}
+.tote-email-tools a{color:#075c38}
 @media(max-width:500px){
- .tote-gmail-setup{padding:13px}
- .tote-gmail-head h3{font-size:17px}
- .tote-gmail-head{flex-wrap:wrap}
- .tote-gmail-metrics{gap:5px}
- .tote-gmail-metrics>div{padding:8px 5px}
- .tote-gmail-metrics span{font-size:9px}
- .tote-gmail-metrics strong{font-size:12px}
- .tote-gmail-actions{flex-direction:column}
- .tote-gmail-actions .btn{width:100%;justify-content:center}
+ .tote-email-strip{padding:11px 12px}
+ .tote-email-copy small{font-size:10px}
+ .tote-email-count{font-size:18px}
+ .tote-email-tool-actions{flex-direction:column}
+ .tote-email-tool-actions .btn{width:100%}
 }
