@@ -24,8 +24,8 @@ tote=async function(){
  const ready=Boolean(status?.ready);
  const date=timestamp=>timestamp?new Date(timestamp).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'Not yet';
  panel.innerHTML='<div class="tote-gmail-head"><div>'+
-  '<span class="eyebrow dark">FREE TOTE TICKET EMAILS</span><h3>Connect club Gmail</h3>'+
-  '<p>Send electronic ticket receipts from <strong>afonvalleyafc@gmail.com</strong>, without buying a domain.</p></div>'+
+  '<span class="eyebrow dark">FREE TOTE TICKET & WINNER EMAILS</span><h3>Connect club Gmail</h3>'+
+  '<p>Send ticket receipts and prize-winner messages from <strong>afonvalleyafc@gmail.com</strong>, without buying a domain.</p></div>'+
   '<span class="badge '+(ready?'ok':'warn')+'">'+(ready?'GMAIL READY':'SETUP REQUIRED')+'</span></div>'+
   '<div class="tote-gmail-metrics">'+
   '<div><span>Connection</span><strong>'+(status?.connected?'Online':'Not connected')+'</strong></div>'+
@@ -49,7 +49,7 @@ tote=async function(){
   '<button type="button" class="btn" id="toteGmailRefresh">Check connection</button></div>'+
   '<p class="tote-gmail-private">Keep the copied script private — it contains the club\'s email-connection key. Do not publish or share that code.</p>'+
   '</details>'+
-  '<p class="tote-gmail-safety">Google personal Gmail: normally up to 100 recipients per day. The Hub pauses new entries if Gmail is disconnected or runs out of quota. The final launch checks still apply.</p>';
+  '<p class="tote-gmail-safety">Google personal Gmail: normally up to 100 recipients per day. Two recipients are reserved for potential prize winners. The Hub pauses new orders when the remaining allowance is low or Gmail disconnects. The final launch checks still apply.</p>';
  const reg=area.querySelector('#toteRegistrationChair');
  if(reg)reg.insertAdjacentElement('afterend',panel);
  else area.insertAdjacentElement('afterbegin',panel);
