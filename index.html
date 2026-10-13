@@ -1284,7 +1284,10 @@ async function loadToteReceipt(token){
     return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment arrived after entries closed</h2><p>No Tote numbers have been issued. The payment has been flagged for review/refund rather than being entered into the wrong draw.</p></div>';
   }
   if(o.status==='expired'){
-    $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment window expired</h2><p>This order stopped reserving numbers because the payment was not reported in time.</p><p>If you <strong>already sent the bank transfer before the sales cutoff</strong>, you can still notify the club and it will be checked manually. Acceptance depends on the actual Lloyds receipt time and numbers still being available.</p><button id="expiredPaidClaim" class="btn primary">I already paid · notify the club</button></div>';
+    if(o.claimed_paid_at){
+      return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment reported to the club</h2><p>Thanks for letting us know. Your original payment window expired, but the Chair can still review your Lloyds transfer.</p><div class="tote-pending"><strong>No ticket numbers have been issued.</strong> The club must check the bank receipt time, reference and available numbers. If the payment cannot be accepted, the club will contact you about a refund.</div><p class="muted">Quote bank reference '+esc(o.checkout_reference)+' when contacting <a href="mailto:afonvalleyafc@gmail.com">afonvalleyafc@gmail.com</a>.</p></div>';
+    }
+    $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Payment window expired</h2><p>This order no longer reserves ticket numbers because the payment was not reported within its 20-minute window.</p><p>If you <strong>already sent the bank transfer before the sales cutoff</strong>, you can still notify the club for manual review. Ticket allocation depends on the actual Lloyds receipt time and available numbers.</p><button id="expiredPaidClaim" class="btn primary">I already paid · notify the club</button></div>';
     $('#expiredPaidClaim').onclick=async e=>{const b=e.currentTarget;b.disabled=true;try{await toteApi('tote-bank-claim',{method:'POST',body:JSON.stringify({order_token:token})});loadToteReceipt(token)}catch(err){b.disabled=false;alert(err.message)}};return;
   }
   if(o.status==='rejected'){
@@ -1314,7 +1317,7 @@ async function tote(){
   settings=sr.data;payouts=pr.data||[];alerts=ar.data||[];orders=or.data||[];drawHistory=dr.data||[];
   const myLink=referral?.code?toteLink(referral.code):null,clubLink=toteLink('club');
   const rows=(board||[]).map((x,i)=>'<div class="tote-board-row"><span class="rank">'+(i+1)+'</span><strong>'+esc(x.player_name)+'</strong><span>'+x.current_draw_tickets+'</span><span>'+x.month_tickets+'</span><span>'+x.season_tickets+'</span></div>').join('');
-  const bankChecks=orders.filter(o=>o.payment_provider==='bank_transfer'&&['payment_claimed','review','awaiting_payment','rejected'].includes(o.status));
+  const bankChecks=orders.filter(o=>o.payment_provider==='bank_transfer'&&(['payment_claimed','review','awaiting_payment','rejected'].includes(o.status)||(o.status==='expired'&&o.claimed_paid_at)));
   const bankChecksHtml=bankChecks.length?bankChecks.map(o=>{
     const claimed=o.claimed_paid_at?new Date(o.claimed_paid_at).toLocaleString('en-GB'):'Not yet';
     const reason=o.review_reason?'<div class="tote-alert warning"><strong>Review reason: '+esc(o.review_reason.replaceAll('_',' '))+'</strong></div>':'';
