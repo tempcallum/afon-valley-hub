@@ -39,3 +39,46 @@
  .tote-reg-file-row .btn{flex:1;min-height:41px}
  .tote-registration-public-details{flex-direction:column;gap:4px}
 }
+
+
+/* Chair dashboard: keep the Council registration visible without the full admin card. */
+.tote-reg-chair.tote-reg-chair-compact{
+  padding:12px 15px;
+  border-left-width:3px;
+  box-shadow:none;
+  border-radius:13px;
+}
+.tote-reg-chair-compact .tote-reg-heading{align-items:center}
+.tote-reg-chair-compact .tote-reg-heading h3{font-size:15px;line-height:1.3;margin:2px 0}
+.tote-reg-chair-compact .tote-reg-heading .eyebrow{font-size:9px}
+.tote-reg-chair-compact .tote-reg-heading p{font-size:10px}
+.tote-reg-chair-compact .tote-reg-heading .badge{font-size:10px;padding:5px 8px}
+.tote-reg-disclosure{margin-top:7px;padding-top:7px;border-top:1px solid #e6eee8}
+.tote-reg-disclosure>summary{font-size:11px;font-weight:750;color:#577965;cursor:pointer;padding:4px 0}
+.tote-reg-disclosure[open]>.tote-reg-id{margin-top:12px}
+.tote-reg-disclosure .tote-reg-checklist{border-top:1px solid #e5eee6}
+
+/* The money/account settings and historic reports remain a tap away. */
+.tote-section-disclosure{padding:0!important;overflow:hidden}
+.tote-section-disclosure>summary{
+  padding:16px 18px;
+  cursor:pointer;
+  color:#17482d;
+  font-size:14px;
+  font-weight:850;
+  list-style-position:inside;
+  background:#f7faf7;
+  outline-offset:-4px;
+}
+.tote-section-disclosure[open]>summary{border-bottom:1px solid #dce7df}
+.tote-section-content{padding:15px 18px}
+.tote-section-content>h3{margin-top:0}
+.tote-section-disclosure>summary:focus-visible,.tote-reg-disclosure>summary:focus-visible{
+  outline:2px solid #0c6742;
+}
+@media(max-width:500px){
+  .tote-reg-chair.tote-reg-chair-compact{padding:10px 12px}
+  .tote-reg-chair-compact .tote-reg-heading h3{font-size:14px}
+  .tote-section-disclosure>summary{padding:13px 14px;font-size:13px}
+  .tote-section-content{padding:13px}
+}
