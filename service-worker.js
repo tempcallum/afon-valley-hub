@@ -1,4 +1,4 @@
-const CACHE='avfc-hub-v23';
+const CACHE='avfc-hub-v24';
 const APP_SHELL=[
   './manifest.webmanifest',
   './avfc-logo.jpg',
