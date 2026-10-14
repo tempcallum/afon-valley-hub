@@ -139,7 +139,7 @@ async function showPublicJoin(){
     }catch(err){msg.textContent=err.message;btn.disabled=false;btn.textContent='Send application'}
   };
 }
-async function boot(){if(new URLSearchParams(location.search).get('register')==='player'){showDirectPlayerRegistration();return}if(publicTote){await showPublicTote();return}if(publicJoin){await showPublicJoin();return}const {data:{session}}=await sb.auth.getSession();session?.user?await enter(session.user):(showLogin(),initialParams.has('apply')&&setMode('signup'));sb.auth.onAuthStateChange(async(event,s)=>{if(event==='PASSWORD_RECOVERY')return showRecovery();s?.user?await enter(s.user):showLogin()})}function showLogin(){$('#shell').classList.add('hidden');$('#login').classList.remove('hidden')}
+async function boot(){if(new URLSearchParams(location.search).get('register')==='player'){showDirectPlayerRegistration();return}if(publicTote==='committee'){await showCommitteeTote();return}if(publicTote){await showPublicTote();return}if(publicJoin){await showPublicJoin();return}const {data:{session}}=await sb.auth.getSession();session?.user?await enter(session.user):(showLogin(),initialParams.has('apply')&&setMode('signup'));sb.auth.onAuthStateChange(async(event,s)=>{if(event==='PASSWORD_RECOVERY')return showRecovery();s?.user?await enter(s.user):showLogin()})}function showLogin(){$('#shell').classList.add('hidden');$('#login').classList.remove('hidden')}
 async function enter(u){user=u;const {data:p}=await sb.from('profiles').select('*').eq('id',u.id).maybeSingle();profile=p;$('#login').classList.add('hidden');$('#shell').classList.remove('hidden');if(!p)return $('#content').innerHTML='<div class="panel empty">Finishing account setup…</div>';$('#hi').textContent='Hi '+p.display_name;if(!p.approved){$('#nav').innerHTML='';await applicantPortal();return}const {data:pid}=await sb.rpc('my_player_id');myPlayer=pid||null;if(p.role==='player')viewMode='player';if(hubParam==='tote')tab='tote';else if(hubParam==='availability')tab='availability';else if(hubParam==='events')tab='events';else if(hubParam==='account'&&myPlayer){viewMode='player';tab='account'}else if(hubParam==='admin'&&p.role==='chair')tab='admin';syncPerspective();if(p.role==='chair')ensureClubDocumentPack().catch(e=>console.error('Club document pack setup failed',e));if(sumupRecurringReturn){tab='money';drawNav();await sb.functions.invoke('verify-sumup-recurring',{body:{}});await render('money');$('#content').insertAdjacentHTML('afterbegin','<div class="payment-success"><strong>Automatic SumUp setup checked</strong><span>If SumUp confirmed the saved card, automatic subs will now show as active below.</span></div>');history.replaceState({},'',location.pathname);sumupRecurringReturn=null;return}if(sumupReturn&&sumupCheckout){const area=sumupArea==='events'?'events':'money';tab=area;drawNav();await render(area);let verifyStatus='pending';const {data:sv,error:se}=await sb.functions.invoke('verify-sumup-checkout',{body:{checkout_id:sumupCheckout}});if(!se&&sv?.status)verifyStatus=String(sv.status).toLowerCase();const msg=verifyStatus==='paid'?'<div class="payment-success"><strong>Payment received</strong><span>SumUp has confirmed the payment and your club account has been updated.</span></div>':verifyStatus==='failed'||verifyStatus==='expired'?'<div class="payment-cancel"><strong>Payment not completed</strong><span>SumUp did not confirm this payment. You can try again.</span></div>':'<div class="payment-success"><strong>Payment is being confirmed</strong><span>SumUp is still processing it. Your balance will update automatically once confirmed.</span></div>';$('#content').insertAdjacentHTML('afterbegin',msg);if(area==='events'&&returnEvent)setTimeout(()=>eventDetails(returnEvent),verifyStatus==='paid'?700:200);history.replaceState({},'',location.pathname);sumupReturn=null;sumupCheckout=null;return}if(returnPayment&&returnEvent){tab='events';drawNav();await render('events');if(returnPayment==='success'){$('#content').insertAdjacentHTML('afterbegin','<div class="payment-success"><strong>Payment completed</strong><span>Stripe has confirmed your checkout. Your paid status will update automatically.</span></div>');setTimeout(()=>eventDetails(returnEvent),1800)}else{$('#content').insertAdjacentHTML('afterbegin','<div class="payment-cancel"><strong>Payment not completed</strong><span>No payment was recorded. You can try again whenever you are ready.</span></div>');setTimeout(()=>eventDetails(returnEvent),200)}history.replaceState({},'',location.pathname);return}drawNav();render(tab)}
 function allowed(){const base=isPlayerView()?tabs.player:(tabs[profile?.role]||['home']);const ordered=base.filter(t=>t!=='shop');if(base.includes('shop'))ordered.splice(Math.min(3,ordered.length),0,'shop');if(!ordered.includes('calendar'))ordered.push('calendar');return ordered}function drawNav(){if(!allowed().includes(tab))tab='home';$('#nav').innerHTML=allowed().map(t=>'<button data-t="'+t+'" class="'+(t===tab?'active':'')+'">'+labels[t]+'</button>').join('');$('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;drawNav();render(tab)})}
 async function render(t){$('#content').innerHTML='<div class="panel empty">Loading…</div>';if(t==='home')return home();if(t==='notifications')return notifications();if(t==='tote')return tote();if(t==='committee')return committee();if(t==='events')return events();if(t==='shop')return shop();if(t==='calendar')return calendar();if(t==='players')return players();if(t==='money')return money();if(t==='fines')return fines();if(t==='kit')return kit();if(t==='equipment')return equipment();if(t==='attendance')return attendance();if(t==='availability')return availability();if(t==='emergency')return emergency();if(t==='details')return details();if(t==='documents')return documents();if(t==='account')return account();if(t==='admin')return admin()}
@@ -1080,6 +1080,10 @@ const TOTE_ANON='sb_publishable_j7WOkbvabstVJEmfh5zWbQ_NgE0jhjJ';
 const pounds=v=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(Number(v)||0);
 async function toteApi(path,opts={}){
   const headers={apikey:TOTE_ANON,'Content-Type':'application/json',...(opts.headers||{})};
+  if(publicTote==='committee'){
+    const {data:{session}}=await sb.auth.getSession();
+    if(session?.access_token)headers.Authorization='Bearer '+session.access_token;
+  }
   const r=await fetch(TOTE_FUNCTION_BASE+'/'+path,{...opts,headers});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error||'Something went wrong.');
@@ -1132,15 +1136,16 @@ async function showPublicTote(){
   $('#toteBack').onclick=()=>location.href=location.pathname;
   if(publicTote==='return'&&toteOrder)return loadToteReceipt(toteOrder);
   if(publicTote==='preview')return showToteReceiptPreview();
-  const ref=publicTote&&publicTote!=='return'?publicTote:'club';
-  let info;try{info=await toteApi('tote-public?ref='+encodeURIComponent(ref))}catch(e){return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Tote unavailable</h2><p>'+esc(e.message)+'</p></div>'}
+  const committeeMode=publicTote==='committee';
+  const ref=committeeMode?'club':(publicTote&&publicTote!=='return'?publicTote:'club');
+  let info;try{info=await toteApi('tote-public?ref='+encodeURIComponent(ref)+(committeeMode?'&mode=committee':''))}catch(e){return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>Tote unavailable</h2><p>'+esc(e.message)+'</p></div>'}
   const d=info.current_draw;
   if(!d)return $('#totePublicContent').innerHTML='<div class="tote-public-card"><h2>No draw is open</h2><p>The next Afon Valley Tote will appear here when it opens.</p></div>';
   const drawAt=new Date(d.draw_at).toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
   const closeAt=new Date(d.sales_close_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   const referral=info.referral?'<div class="tote-referral-note">This entry link supports '+esc(info.referral.name)+' on the internal Afon Valley sales leaderboard.</div>':'';
   const live=info.payments_live;
-  const pending=!live?'<div class="tote-pending"><strong>Entries are not live yet.</strong><br>The council registration is recorded. Live entries are still on hold until ticket-email delivery and the final launch checks are complete.</div>':'<div class="success-note"><strong>Direct bank transfer.</strong> Your ticket numbers are issued only after Afon Valley FC verifies the payment in Lloyds.</div>';
+  const pending=!live?'<div class="tote-pending"><strong>'+(committeeMode?'Committee soft launch is prepared but not active.':'Entries are not live yet.')+'</strong><br>'+(committeeMode?'The Chair must authorise the restricted launch before committee members can purchase tickets. Public sales remain closed.':'The council registration is recorded. Live entries are still on hold until the ticket-email service and final launch checks are complete.')+'</div>':'<div class="success-note"><strong>'+(committeeMode?'Committee-only tickets · real £1 entries.':'Direct bank transfer.')+'</strong> Your ticket numbers are issued only after Afon Valley FC verifies the payment in Lloyds.</div>';
   const history=(info.history||[]).map(h=>'<div class="tote-result"><div><strong>Draw '+h.draw_number+'</strong><br><small class="muted">'+day(h.draw_at)+'</small></div><b>'+(h.jackpot_won?'Jackpot won · '+pounds(h.jackpot_prize):'Rolled over · '+pounds(h.rollover))+(h.weekly_winner?'<br><small>Weekly: '+esc(h.weekly_winner)+' · '+pounds(h.weekly_prize)+'</small>':'')+'</b></div>').join('');
   $('#totePublicContent').innerHTML=
     '<div class="tote-jackpot"><span>CURRENT ROLLOVER JACKPOT</span><strong>'+pounds(d.current_jackpot)+'</strong><small>Draw '+d.draw_number+' · '+drawAt+'</small></div>'+
@@ -1154,6 +1159,18 @@ async function showPublicTote(){
       (info.registration_number?'<p class="muted" style="font-size:10px">Small Society Lottery registration: '+esc(info.registration_number)+'.</p>':'')+
     '</div>'+
     '<div class="tote-public-card"><h3>Recent draws</h3>'+(history||'<div class="empty">No completed draws yet.</div>')+'</div>';
+  if(committeeMode){
+    const nameInput=$('#publicToteForm input[name="name"]');
+    const emailInput=$('#publicToteForm input[name="email"]');
+    nameInput.value=info.soft_launch_buyer_name||'';
+    emailInput.value=info.soft_launch_buyer_email||'';
+    nameInput.readOnly=true;emailInput.readOnly=true;
+    const identityNote=document.createElement('p');
+    identityNote.className='muted';
+    identityNote.style.fontSize='12px';
+    identityNote.textContent='Your name and email are taken from your approved Hub account. Re-enter your email below to confirm it.';
+    $('#publicToteForm').insertAdjacentElement('afterbegin',identityNote);
+  }
   let selected=1;
   const update=()=>{document.querySelectorAll('[data-tote-count]').forEach(b=>b.classList.toggle('active',Number(b.dataset.toteCount)===selected));const btn=$('#publicToteForm button[type="submit"]');if(btn)btn.textContent='Get bank payment details · '+pounds(info.ticket_price*selected)};
   document.querySelectorAll('[data-tote-count]').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.toteCount);update()});
@@ -1184,7 +1201,7 @@ async function showPublicTote(){
     const fd=new FormData(e.target),btn=e.target.querySelector('button[type="submit"]');
     btn.disabled=true;btn.textContent='Preparing payment…';
     try{
-      const out=await toteApi('create-tote-bank-order',{method:'POST',body:JSON.stringify({name:fd.get('name'),email:fd.get('email'),email_confirm:fd.get('email_confirm'),mobile:fd.get('mobile'),age_confirmed:fd.get('age')==='on',ticket_count:selected,ref:ref})});
+      const out=await toteApi('create-tote-bank-order',{method:'POST',body:JSON.stringify({name:fd.get('name'),email:fd.get('email'),email_confirm:fd.get('email_confirm'),mobile:fd.get('mobile'),age_confirmed:fd.get('age')==='on',ticket_count:selected,ref:ref,soft_launch:committeeMode})});
       renderBankPaymentInstructions(out);
     }catch(err){btn.disabled=false;update();alert(err.message)}
   };
@@ -1428,5 +1445,5 @@ if('serviceWorker' in navigator){
     }catch{}
   });
 }
-</script><script src="./applicant.js?v=1"></script><script src="./comet-stats.js?v=2"></script><script src="./comet-personal.js?v=3"></script><script src="./direct-registration.js?v=3"></script><script src="./hub-compact.js?v=4"></script><script src="./player-onboarding.js?v=1"></script><script src="./comet-clearance.js?v=1"></script><script src="./hub-share.js?v=1"></script><script src="./match-awards.js?v=2"></script><script src="./previous-results.js?v=1"></script><script src="./tote-registration.js?v=2"></script><script src="./tote-gmail-setup.js?v=2"></script><script>boot();
+</script><script src="./applicant.js?v=1"></script><script src="./comet-stats.js?v=2"></script><script src="./comet-personal.js?v=3"></script><script src="./direct-registration.js?v=3"></script><script src="./hub-compact.js?v=4"></script><script src="./player-onboarding.js?v=1"></script><script src="./comet-clearance.js?v=1"></script><script src="./hub-share.js?v=1"></script><script src="./match-awards.js?v=2"></script><script src="./previous-results.js?v=1"></script><script src="./tote-registration.js?v=2"></script><script src="./tote-gmail-setup.js?v=2"></script><script src="./tote-committee.js?v=1"></script><script>boot();
 </script></body></html>
