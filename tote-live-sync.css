@@ -1,0 +1,11 @@
+.tote-live-indicator{display:flex;align-items:center;gap:12px;padding:12px 15px;margin:8px 0 14px;background:#f5faf6;border:1px solid #cfe2d3;border-radius:11px;color:#0b5032}
+.tote-live-light{width:10px;height:10px;flex:none;border-radius:50%;background:#39965d}
+.tote-live-copy{flex:1;min-width:0}
+.tote-live-copy strong,.tote-live-copy small{display:block}
+.tote-live-copy strong{font-weight:900;font-size:12px}
+.tote-live-copy small{font-size:11px;color:#5d7765;line-height:1.5;margin-top:3px}
+.tote-live-indicator .btn{flex:none;min-height:37px;padding:8px 11px;font-size:11px}
+.tote-live-indicator[data-status=waiting]{background:#fdf9ec;border-color:#e6d7aa;color:#73531e}
+.tote-live-indicator[data-status=waiting] .tote-live-light{background:#d4a640}
+.tote-live-indicator[data-status=error]{background:#fff8f6;border-color:#e7c7be;color:#903e2d}
+@media(max-width:650px){.tote-live-indicator{padding:11px 12px;gap:9px;flex-wrap:wrap}.tote-live-copy{flex:1 1 calc(100% - 30px)}.tote-live-indicator .btn{margin-left:19px;font-size:12px}}
