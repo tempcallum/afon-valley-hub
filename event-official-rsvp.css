@@ -1,0 +1,21 @@
+/* Simple personal RSVP available to committee officers in Events. */
+.avfc-event-personal{border:1px solid #c7dfcd;background:#f8fcf9;padding:17px 18px}
+.avfc-event-personal-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.avfc-event-personal-top h3{font-size:21px;letter-spacing:-.025em;color:#0b4630;margin:3px 0}
+.avfc-event-personal-top p{font-size:12px;margin:2px 0 0}
+.avfc-event-personal-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:14px}
+.avfc-event-personal-form label{font-size:12px;color:#42614c;font-weight:750}
+.avfc-event-personal-form input,.avfc-event-personal-form select{display:block;width:100%;margin-top:6px;min-height:42px}
+.avfc-event-personal-form button{min-height:43px;padding:9px 16px}
+.avfc-event-official-note{font-size:11px;color:#587763;margin-top:12px;line-height:1.5}
+.avfc-event-official-list{padding:16px 18px}
+.avfc-event-official-list>h3{font-size:16px;margin:0 0 6px}
+.avfc-event-official-list>p{font-size:11px;margin:0 0 8px}
+.avfc-event-official-list .row{padding:9px 0}
+.avfc-event-official-list .row strong{font-size:12px}
+@media(max-width:650px){
+ .avfc-event-personal{padding:13px}
+ .avfc-event-personal-form{grid-template-columns:1fr}
+ .avfc-event-personal-form button{width:100%}
+ .avfc-event-personal-top h3{font-size:18px}
+}
