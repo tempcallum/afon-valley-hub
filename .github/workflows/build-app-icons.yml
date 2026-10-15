@@ -32,12 +32,18 @@ jobs:
           for size in (192,512):
               icon=src.resize((size,size),Image.Resampling.LANCZOS)
               icon.save(f'avfc-icon-{size}.png',format='PNG',optimize=True)
+          # Keep the entire round AVFC badge inside Android's adaptive icon mask.
+          safe_size=356
+          badge=src.resize((safe_size,safe_size),Image.Resampling.LANCZOS)
+          maskable=Image.new('RGB',(512,512),'white')
+          maskable.paste(badge,((512-safe_size)//2,(512-safe_size)//2))
+          maskable.save('avfc-icon-maskable-512.png',format='PNG',optimize=True)
           PY
       - name: Commit refreshed icon images
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add avfc-icon-192.png avfc-icon-512.png
+          git add avfc-icon-192.png avfc-icon-512.png avfc-icon-maskable-512.png
           if ! git diff --cached --quiet; then
             git commit -m "Generate Android PWA icons from existing club badge"
             git push
