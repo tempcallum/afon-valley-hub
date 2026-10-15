@@ -1,8 +1,11 @@
-const CACHE='avfc-hub-v25';
+const CACHE='avfc-hub-v26';
 const APP_SHELL=[
-  './manifest.webmanifest',
+  './manifest.webmanifest?v=2',
   './avfc-logo.jpg',
-  './icon.svg'
+  './icon.svg',
+  './avfc-icon-192.png?v=2',
+  './avfc-icon-512.png?v=2',
+  './avfc-icon-maskable-512.png?v=2'
 ];
 
 self.addEventListener('install',event=>{
