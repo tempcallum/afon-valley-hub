@@ -85,6 +85,11 @@ boot=async function(){
 const avfcPrizeOriginalTote=tote;
 tote=async function(){
   await avfcPrizeOriginalTote();
+  // Council registration belongs after the operational payments and payouts, not above them.
+  const registrationBox=$('#toteRegistrationChair');
+  if(registrationBox&&registrationBox.isConnected&&tab==='tote'&&profile?.role==='chair'){
+    $('#content').appendChild(registrationBox);
+  }
   if(tab!=='tote'||!profile?.approved||!['chair','treasurer'].includes(profile.role)||isPlayerView())return;
   const root=$('#content');
   const payoutHeading=[...root.querySelectorAll('h3')].find(n=>n.textContent.trim()==='Winner payments');
