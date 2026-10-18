@@ -101,7 +101,7 @@ tote=async function(){
   if(!claimPanel.isConnected||tab!=='tote')return;
   const claims=response.claims||[];
   claimPanel.innerHTML='<div class="head"><div><span class="eyebrow dark">PRIZE CLAIMS</span><h3>Winner bank details</h3>'+
-    '<p class="muted">Only you and Chris can view submitted bank details. Pay manually through Lloyds, then use “Mark paid” in Winner payments below. Bank details are deleted when marked paid.</p></div></div>'+
+    '<p class="muted">Only '+(profile.role==='treasurer'?'you and Callum':'you and Chris')+' can view submitted bank details. Pay manually through Lloyds, then use “Mark paid” in Winner payments below. Bank details are deleted when marked paid.</p></div></div>'+
     (claims.length?claims.map(p=>'<div class="avfc-prize-admin-row">'+
       '<div><strong>'+esc(p.winner_name)+' · '+pounds(Number(p.amount_pence||0)/100)+'</strong>'+
       '<small>Draw '+esc(String(p.draw_number||''))+' · '+esc(p.prize_type)+'</small>'+
