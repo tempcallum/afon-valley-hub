@@ -1,0 +1,25 @@
+.avfc-prize-card{max-width:600px;margin:20px auto}
+.avfc-prize-total{font-size:36px;font-weight:950;letter-spacing:-.04em;color:#07532f;margin:8px 0 18px}
+.avfc-prize-claim-form{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:20px}
+.avfc-prize-claim-form label{display:block;font-size:12px;font-weight:750;color:#234734}
+.avfc-prize-claim-form input:not([type=checkbox]){display:block;width:100%;font-size:16px;margin-top:6px;height:44px}
+.avfc-prize-claim-form label:first-child,.avfc-prize-consent,.avfc-prize-claim-form>button,.avfc-prize-claim-form>p{grid-column:1/-1}
+.avfc-prize-consent{display:flex!important;align-items:flex-start;gap:10px;font-size:12px!important}
+.avfc-prize-consent input{margin-top:4px;flex:none}
+.avfc-prize-claim-form>button{min-height:46px}
+.avfc-prize-safety{background:#edf5ef;border:1px solid #d3e5d7;border-radius:9px;padding:12px;margin-top:17px;font-size:12px;color:#3c5b45;line-height:1.6}
+.avfc-prize-admin{margin-bottom:16px}
+.avfc-prize-admin-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid #dae5dd;padding:12px 0}
+.avfc-prize-admin-row:last-child{border-bottom:0}
+.avfc-prize-admin-row>div:first-child{flex:1;min-width:0}
+.avfc-prize-admin-row strong,.avfc-prize-admin-row small{display:block}
+.avfc-prize-admin-row small{color:#5e7869;font-size:11px;margin-top:3px}
+.avfc-prize-admin-row .btn{min-height:38px;font-size:11px}
+.avfc-prize-reveal-area{flex-basis:100%;width:100%}
+.avfc-prize-reveal-area:empty{display:none}
+.avfc-prize-bank-details{background:#f5faf6;border:1px solid #d4e4d7;padding:12px;border-radius:10px}
+.avfc-prize-bank-details>p{font-size:12px;margin:0 0 9px}
+.avfc-prize-bank-details>div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid #dce9e0}
+.avfc-prize-bank-details>div span{font-size:12px}
+.avfc-prize-bank-details>div strong{font-family:ui-monospace,monospace;font-size:14px;letter-spacing:.04em;text-align:right}
+@media(max-width:600px){.avfc-prize-card{margin:10px auto}.avfc-prize-claim-form{grid-template-columns:1fr;gap:11px}.avfc-prize-claim-form label{grid-column:1/-1}.avfc-prize-admin-row .btn{width:100%}.avfc-prize-bank-details>div{align-items:center}}
