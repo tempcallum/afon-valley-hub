@@ -10,14 +10,14 @@ labels.stats='Player Stats';
 
 async function officialStats(){
  const node=$('#content');
- node.innerHTML='<div class="panel"><span class="eyebrow dark">OFFICIAL FAW COMET</span><h3>Player statistics</h3><p class="muted">Appearances, goals, minutes and disciplinary totals from COMET reports. Data refreshes when the club synchronises the report.</p><div id="cometSeasonChooser"></div><div id="cometStatsBody" class="empty">Loading official stats…</div></div>';
- const {data,error}=await sb.from('comet_player_stats').select('person_id,person_name,season,appearances,starts,goals,yellows,second_yellows,reds,minutes_played,last_match').order('goals',{ascending:false}).limit(500);
+ node.innerHTML='<div class="panel"><span class="eyebrow dark">AFON VALLEY · CLUB STATISTICS</span><h3>Player statistics</h3><p class="muted">Season totals based on FAW COMET reports with any documented club-only attribution adjustments. Official COMET records are not edited.</p><div id="cometSeasonChooser"></div><div id="cometStatsBody" class="empty">Loading official stats…</div></div>';
+ const {data,error}=await sb.from('club_adjusted_comet_player_stats').select('person_id,person_name,season,appearances,starts,goals,yellows,second_yellows,reds,minutes_played,last_match').order('goals',{ascending:false}).limit(500);
  const target=$('#cometStatsBody'),chooser=$('#cometSeasonChooser');
  if(!target)return;
  if(error){target.textContent='Unable to load statistics. Please try again later.';return;}
  const rows=data||[];
  if(!rows.length){
-   target.innerHTML='<div class="empty"><h3>No COMET statistics imported yet</h3><p>The secure importer is ready. The Chair still needs to store the COMET API key in Supabase and complete the first synchronisation.</p></div>';
+   target.innerHTML='<div class="empty"><h3>No club statistics are currently available</h3><p>Please try again later or check the FAW COMET synchronisation in Chair Admin.</p></div>';
    return;
  }
  const seasons=[...new Set(rows.map(x=>x.season||'Unspecified'))].sort().reverse();
@@ -32,7 +32,7 @@ async function officialStats(){
    target.innerHTML='<div class="dashboard-stats"><div class="metric"><span>PLAYERS</span><strong>'+selected.length+'</strong></div><div class="metric"><span>PLAYER APPEARANCES</span><strong>'+appearances+'</strong></div><div class="metric"><span>PLAYER GOALS</span><strong>'+goals+'</strong></div><div class="metric"><span>YELLOW / RED</span><strong>'+yellows+' / '+reds+'</strong></div></div>'+
      '<div class="table"><table><thead><tr><th>Player</th><th>Apps</th><th>Starts</th><th>Goals</th><th>Yellows</th><th>Reds</th><th>Minutes</th></tr></thead><tbody>'+
      selected.map(x=>'<tr data-comet-person="'+Number(x.person_id)+'"><td><strong>'+esc(x.person_name)+'</strong></td><td>'+Number(x.appearances||0)+'</td><td>'+Number(x.starts||0)+'</td><td>'+Number(x.goals||0)+'</td><td>'+Number(x.yellows||0)+'</td><td>'+Number(x.reds||0)+'</td><td>'+Number(x.minutes_played||0)+'</td></tr>').join('')+
-     '</tbody></table></div><p class="muted">Official appearance-record totals only. League standings and match-event statistics will follow when those COMET report formats have been checked.</p>';
+     '</tbody></table></div><p class="muted">Club-adjusted statistics for internal club use, not an official FAW record. One match on 22 August 2026 is attributed internally to Matthew Aylott rather than Tom Leake; original COMET data remains unchanged.</p>';
  }
  $('#cometSeason').onchange=display;display();
 }
