@@ -1343,7 +1343,21 @@ async function tote(){
   settings=sr.data;payouts=pr.data||[];alerts=ar.data||[];orders=or.data||[];drawHistory=dr.data||[];
   const myLink=referral?.code?toteLink(referral.code):null,clubLink=toteLink('club');
   const rows=(board||[]).map((x,i)=>'<div class="tote-board-row"><span class="rank">'+(i+1)+'</span><strong>'+esc(x.player_name)+'</strong><span>'+x.current_draw_tickets+'</span><span>'+x.month_tickets+'</span><span>'+x.season_tickets+'</span></div>').join('');
-  const bankChecks=orders.filter(o=>o.payment_provider==='bank_transfer'&&(['payment_claimed','review','awaiting_payment','rejected'].includes(o.status)||(o.status==='expired'&&o.claimed_paid_at)));
+  const currentDrawNumber=Number(d?.draw_number||0);
+  // Previous draw records are financial history, not actionable payment checks.
+  // Preserve rejected and paid orders intact for the council/audit trail.
+  const bankChecks=orders.filter(o=>o.payment_provider==='bank_transfer'
+    && currentDrawNumber>0 && Number(o.tote_draws?.draw_number)===currentDrawNumber
+    && (['payment_claimed','review','awaiting_payment','rejected'].includes(o.status)
+        ||(o.status==='expired'&&o.claimed_paid_at)));
+  const pastDrawOrders=orders.filter(o=>o.payment_provider==='bank_transfer'
+    && Number(o.tote_draws?.draw_number)!==currentDrawNumber);
+  const pastDrawHtml=pastDrawOrders.length
+    ?'<details class="panel tote-section-disclosure" id="totePastPayments"><summary>Past draw payment records · '+pastDrawOrders.length+' archived</summary>'+
+      '<p class="muted" style="margin:12px 0">These orders are retained for the lottery audit. They cannot be reopened or issued new tickets for a completed draw.</p>'+
+      '<div class="list">'+pastDrawOrders.map(o=>'<div class="row"><span><strong>'+esc(o.buyer_name)+'</strong><br><small class="muted">Draw '+esc(String(o.tote_draws?.draw_number||''))+' · '+esc(o.checkout_reference||'')+'</small></span>'+
+      '<span class="badge '+(o.status==='paid'?'ok':'')+'">'+esc(String(o.status||'').replaceAll('_',' ').toUpperCase())+'</span></div>').join('')+'</div></details>'
+    :'';
   const bankChecksHtml=bankChecks.length?bankChecks.map(o=>{
     const claimed=o.claimed_paid_at?new Date(o.claimed_paid_at).toLocaleString('en-GB'):'Not yet';
     const reason=o.review_reason?'<div class="tote-alert warning"><strong>Review reason: '+esc(o.review_reason.replaceAll('_',' '))+'</strong></div>':'';
@@ -1358,7 +1372,7 @@ async function tote(){
   $('#content').innerHTML=
     '<div class="tote-internal-hero"><div><span class="eyebrow">AFON VALLEY TOTE</span><div class="big">'+pounds(d?.current_jackpot||0)+'</div><p>Current rollover jackpot'+(d?' · draw '+d.draw_number+' on '+new Date(d.draw_at).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'')+'</p></div><div class="tote-mini-stats"><div><span>ENTRIES</span><strong>'+(d?.sold_tickets||0)+'</strong></div><div><span>WEEKLY</span><strong>'+pounds(d?.weekly_prize||0)+'</strong></div><div><span>POOL</span><strong>'+(info?.pool_size||'—')+'</strong></div></div></div>'+
     (!isChair?'<div class="panel tote-treasurer-notice"><span class="eyebrow dark">TREASURER ACCESS</span><p class="muted">You can verify Lloyds payments, issue tickets after the transfer is confirmed, review orders, record prize payouts and export draw finances. Lottery rules, public sales settings and the registered bank details remain controlled by the Chair.</p></div>':'')+
-    '<div class="panel"><span class="eyebrow dark">BANK PAYMENT CHECKS</span><h3>Payments waiting for verification</h3><p class="muted">A buyer pressing “I\'ve paid” only alerts you. Tickets are created only after you check the Lloyds account and confirm the exact payment here.</p>'+bankChecksHtml+'</div>'+
+    '<div class="panel"><span class="eyebrow dark">BANK PAYMENT CHECKS</span><h3>Payments waiting for verification</h3><p class="muted">Only entries for the current open draw appear here. A buyer pressing “I\'ve paid” only alerts you. Tickets are created only after you check the Lloyds account and confirm the exact payment here.</p>'+bankChecksHtml+'</div>'+pastDrawHtml+
     (myLink?'<div class="panel"><div class="head"><div><span class="eyebrow dark">MY TOTE SALES</span><h3>Your referral link & QR</h3><p class="muted">Sales through these count towards the internal leaderboard. Your own purchases do not count towards your sales total.</p></div></div><div class="tote-share-box"><div><div class="tote-share-link">'+esc(myLink)+'</div></div><button id="copyMyTote" class="btn primary">Copy link</button></div><div id="myToteQr" class="tote-qr"></div></div>':'')+
     '<div class="panel"><div class="head"><div><span class="eyebrow dark">CLUB DIRECT</span><h3>Social / main club link</h3><p class="muted">Sales through this link do not credit any player on the leaderboard.</p></div></div><div class="tote-share-box"><div class="tote-share-link">'+esc(clubLink)+'</div><button id="copyClubTote" class="btn primary">Copy link</button></div><div id="clubToteQr" class="tote-qr"></div></div>'+
     '<div class="panel"><div class="head"><div><span class="eyebrow dark">INTERNAL LEADERBOARD</span><h3>Tote sales</h3></div></div><div class="tote-board-row tote-board-head"><span>#</span><span>Player</span><span>This draw</span><span>Month</span><span>Season</span></div>'+(rows||'<div class="empty">No referred sales yet.</div>')+'</div>'+
