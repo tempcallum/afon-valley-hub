@@ -70,10 +70,10 @@ tote=async function(){
    '<details class="tote-reg-checklist"><summary>Launch checks · '+checked+' of '+checks.length+' complete</summary>'+
    '<div>'+checks.map(c=>'<div class="tote-reg-check"><span class="'+(c.done?'passed':'missing')+'">'+(c.done?'Done':'To do')+'</span><span>'+esc(c.label)+'</span></div>').join('')+
    '</div><p>Before accepting entries, confirm the draw rules, under-16 protection, ticket/receipt details and two appointed signatories for council returns. Draw returns are due within three months.</p>'+
-   '<p>The current Tote stays in preview/closed-to-sales mode until final approval.</p></details>'+
+   '<p>Public ticket sales are controlled separately by the Chair. A registration certificate alone never starts sales.</p></details>'+
    '<p class="tote-reg-hold">'+(s.payments_enabled?
      'Live ticket sales are enabled in settings. Verify all checks immediately.':
-     'Ticket sales are still switched off; receiving the council certificate does not start sales automatically.')+'</p>';
+     'Public checkout is currently closed; the registration certificate alone does not activate sales.')+'</p>';
  // Keep the Council record accessible without filling the operational screen.
  const details=document.createElement('details');
  details.className='tote-reg-disclosure';
@@ -86,9 +86,8 @@ tote=async function(){
    if(item)details.appendChild(item);
  }
  panel.classList.add('tote-reg-chair-compact');
- const hero=area.querySelector('.tote-internal-hero');
- if(hero)hero.insertAdjacentElement('afterend',panel);
- else area.insertAdjacentElement('afterbegin',panel);
+ // Administrative registration remains accessible at the very bottom of the Tote dashboard.
+ area.appendChild(panel);
  panel.querySelector('#toteCopyRegistration').onclick=e=>copyText(s.society_registration_number||avfcRegNumber,e.currentTarget);
  const input=panel.querySelector('#toteCertificateFile');
  const status=panel.querySelector('#toteRegMessage');
