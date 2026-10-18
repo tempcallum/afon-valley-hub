@@ -63,13 +63,24 @@ drawNav=function(){
 
 
 /* Personal Tote view: public information only, with no financial admin methods. */
+/* Public entry page is separate: player home shows share/QR + members-only referral rankings. */
 async function avfcPlayerTote(){
  const el=$('#content');
  if(!el||!profile?.approved||!isPlayerView())return;
- el.innerHTML='<div class="panel"><h3>Afon Valley Tote</h3><p>Loading the current draw…</p></div>';
- let data;
- try{data=await toteApi('tote-public?ref=club')}
- catch(err){
+ el.innerHTML='<div class="panel"><h3>Afon Valley Tote</h3><p>Loading the draw, your personal QR and leaderboard…</p></div>';
+ let data,referral=null,leaderboard=[],leaderboardError=null;
+ try{
+   const [publicData,refResult,boardResult]=await Promise.all([
+     toteApi('tote-public?ref=club'),
+     myPlayer?sb.from('tote_player_referrals').select('code,active')
+       .eq('player_id',myPlayer).eq('active',true).maybeSingle():Promise.resolve({data:null,error:null}),
+     sb.rpc('get_tote_leaderboard')
+   ]);
+   data=publicData;
+   referral=refResult?.error?null:refResult?.data;
+   leaderboard=Array.isArray(boardResult?.data)?boardResult.data:[];
+   leaderboardError=boardResult?.error||null;
+ }catch(err){
    if(tab==='tote'&&el.isConnected)el.innerHTML='<div class="panel">'+
      '<h3>Afon Valley Tote</h3><p class="muted">Live draw information is temporarily unavailable.</p>'+
      '<a class="btn primary" href="'+esc(toteLink('club'))+'">Open the public Tote</a></div>';
@@ -83,6 +94,11 @@ async function avfcPlayerTote(){
     hour:'2-digit',minute:'2-digit'}):'Next draw to be confirmed';
  const cutoff=draw?new Date(draw.sales_close_at).toLocaleTimeString('en-GB',{
     timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
+ // A personal code is looked up under the player's RLS-protected own-record policy.
+ // Never label a generic club link as someone's referral QR.
+ const personalCode=referral?.active&&/^[a-z0-9]{6,60}$/i.test(String(referral.code||''))
+   ?String(referral.code):null;
+ const personalLink=personalCode?toteLink(personalCode):null;
  el.innerHTML='<section class="hub-player-tote">'+
     '<div class="hub-player-tote-heading"><span class="eyebrow dark">AFON VALLEY FC</span>'+
     '<h2>Weekly Tote</h2><p>Support the club for £'+esc(Number(data.ticket_price||1).toFixed(2))+
@@ -104,9 +120,77 @@ async function avfcPlayerTote(){
       (live?'Buy £1 tickets':'View the public Tote')+'</a>'+
       '<a class="btn" href="./tote-rules.html" target="_blank" rel="noopener noreferrer">Rules & eligibility</a>'+
     '</div>'+
+    '<section class="panel hub-player-tote-personal"><div class="hub-player-tote-panel-head">'+
+      '<span class="eyebrow dark">YOUR PERSONAL QR</span><h3>Bring in entries for Afon Valley</h3>'+
+      '<p class="muted">Share your own QR code or link. Tickets bought through it count towards your referral total only after Lloyds payment is verified.</p></div>'+
+      (personalLink?
+        '<div class="hub-player-tote-share"><div class="hub-player-tote-qr" id="avfcMyToteQr" aria-label="QR code linking to your personal Afon Valley Tote page"></div>'+
+        '<div class="hub-player-tote-share-details"><strong>Your own Tote link</strong>'+
+        '<div class="hub-player-tote-url">'+esc(personalLink)+'</div>'+
+        '<div class="hub-player-tote-share-buttons"><button type="button" class="btn primary" id="avfcToteCopy">Copy link</button>'+
+        '<button type="button" class="btn" id="avfcToteShare">Share my link</button></div>'+
+        '<small>Anyone can scan this QR to reach the public ticket page with your referral recorded. You do not need to collect their money or bank details.</small></div></div>'
+        :'<p class="muted">Your personal referral code is not available yet. Please ask the Chair to check that your player record is linked and active.</p>')+
+    '</section>'+
+    '<section class="panel hub-player-tote-leaderboard" id="avfcToteLeaderboard">'+
+      '<div class="hub-player-tote-panel-head"><span class="eyebrow dark">FRIENDLY COMPETITION</span>'+
+      '<h3>Tote referral leaderboard</h3><p class="muted">Rankings count confirmed, paid tickets attributed to each player. No buyer or bank details are shown.</p></div>'+
+      '<div class="hub-tote-board-scopes" role="group" aria-label="Leaderboard period">'+
+        '<button type="button" data-hub-tote-scope="current_draw_tickets" aria-pressed="false">This draw</button>'+
+        '<button type="button" data-hub-tote-scope="month_tickets" aria-pressed="false">This month</button>'+
+        '<button type="button" data-hub-tote-scope="season_tickets" aria-pressed="true">Season</button></div>'+
+      '<div id="avfcToteLeaderboardRows" aria-live="polite"></div>'+
+      '<button type="button" class="btn hub-tote-board-more" id="avfcToteBoardMore" hidden>Show all players</button>'+
+    '</section>'+
     '<p class="hub-player-tote-note">Ages 16+. Tickets are issued after a verified bank transfer. '+
     'Bank payments and prize administration remain restricted to the Chair and Treasurer. '+
     'Registration '+esc(data.registration_number||'details in rules')+'.</p></section>';
+
+ if(personalLink){
+   const qr=el.querySelector('#avfcMyToteQr');
+   try{renderQr(qr,personalLink)}catch(err){console.warn('Could not render personal Tote QR',err);}
+   if(qr&&!qr.querySelector('canvas,img'))qr.textContent='QR temporarily unavailable — use your link below.';
+   el.querySelector('#avfcToteCopy').onclick=e=>copyText(personalLink,e.currentTarget);
+   el.querySelector('#avfcToteShare').onclick=async e=>{
+     if(typeof navigator.share!=='function')return copyText(personalLink,e.currentTarget);
+     try{await navigator.share({title:'Afon Valley Tote',text:'Support Afon Valley FC in our weekly Tote!',url:personalLink})}
+     catch(err){if(err?.name!=='AbortError')copyText(personalLink,e.currentTarget)}
+   };
+ }
+ const boardRoot=el.querySelector('#avfcToteLeaderboardRows');
+ const more=el.querySelector('#avfcToteBoardMore');
+ const scopes=[...el.querySelectorAll('[data-hub-tote-scope]')];
+ let scope='season_tickets',showAll=false;
+ const safeBoard=leaderboard.filter(x=>x&&Number.isFinite(Number(x.player_id)));
+ function updateBoard(){
+   if(!boardRoot?.isConnected||tab!=='tote')return;
+   scopes.forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.hubToteScope===scope)));
+   if(leaderboardError){
+     boardRoot.innerHTML='<p class="muted">The leaderboard is temporarily unavailable. Try reopening the Tote tab.</p>';
+     more.hidden=true;return;
+   }
+   const ranked=safeBoard.slice().sort((a,b)=>
+     (Number(b[scope])||0)-(Number(a[scope])||0)||
+     (Number(b.season_tickets)||0)-(Number(a.season_tickets)||0)||
+     String(a.player_name||'').localeCompare(String(b.player_name||''),'en'));
+   const confirmed=ranked.reduce((sum,x)=>sum+Math.max(0,Number(x[scope])||0),0);
+   const me=ranked.findIndex(x=>Number(x.player_id)===Number(myPlayer));
+   const visible=showAll?ranked:ranked.slice(0,10);
+   boardRoot.innerHTML=(confirmed===0?'<p class="hub-tote-board-empty">Everyone starts level — no confirmed referral tickets for this period yet.</p>':'')+
+     (me>=0?'<div class="hub-tote-board-myrank">Your place: <strong>#'+(me+1)+'</strong> of '+ranked.length+
+       ' · <strong>'+Math.max(0,Number(ranked[me][scope])||0)+'</strong> verified tickets</div>':'')+
+     (visible.length?'<div class="hub-tote-board-header"><span>#</span><span>Player</span><span>Paid tickets</span></div>'+
+       visible.map((item,i)=>'<div class="hub-tote-board-row '+(Number(item.player_id)===Number(myPlayer)?'is-me':'')+'">'+
+         '<span class="hub-tote-board-rank">'+(i+1)+'</span>'+
+         '<span>'+esc(item.player_name||'Player')+(Number(item.player_id)===Number(myPlayer)?' <small>(you)</small>':'')+'</span>'+
+         '<strong>'+Math.max(0,Number(item[scope])||0)+'</strong></div>').join(''):
+       '<p class="muted">No active players on the leaderboard yet.</p>');
+   more.hidden=ranked.length<=10;
+   if(!more.hidden)more.textContent=showAll?'Show top 10':'Show all '+ranked.length+' players';
+ }
+ scopes.forEach(btn=>btn.onclick=()=>{scope=btn.dataset.hubToteScope;showAll=false;updateBoard();});
+ more.onclick=()=>{showAll=!showAll;updateBoard();};
+ updateBoard();
 }
 
 /* Keep payments near the top and the personal statistics immediately below availability. */
