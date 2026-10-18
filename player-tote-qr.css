@@ -1,0 +1,24 @@
+
+/* Personal referral QR within the Player > Club > Tote dashboard. */
+.hub-personal-tote-qr{padding:18px 20px;border:1px solid #d3e4d6}
+.hub-personal-tote-qr-heading h3{font-size:22px;letter-spacing:-.03em;margin:6px 0 4px;color:#0a4930}
+.hub-personal-tote-qr-heading p{font-size:12px;line-height:1.65;margin:0 0 13px;max-width:650px}
+.hub-personal-tote-qr-content{display:grid;grid-template-columns:248px minmax(0,1fr);align-items:center;gap:17px}
+.hub-personal-tote-qr-image{display:flex;align-items:center;justify-content:center;width:248px;height:248px;background:#fff;border:1px solid #e0e9e2;border-radius:17px;padding:16px;margin:auto}
+.hub-personal-tote-qr-image img,.hub-personal-tote-qr-image canvas{display:block!important;max-width:100%;max-height:100%;height:auto!important;width:auto!important;image-rendering:auto}
+.hub-personal-tote-qr-side{display:grid;gap:10px}
+.hub-personal-tote-qr-side>strong{font-size:16px;line-height:1.4;color:#144b32}
+.hub-personal-tote-qr-side small{font-size:12px;line-height:1.5;color:#5f7767}
+.hub-personal-tote-qr-actions{display:flex;gap:9px;flex-wrap:wrap}
+.hub-personal-tote-qr-actions .btn{min-height:43px;font-size:12px;flex:1 1 140px}
+.hub-personal-tote-qr-note{font-size:11px!important;color:#688075!important}
+.hub-personal-tote-qr-loading{padding:12px 0;color:#74867a}
+@media(max-width:620px){
+ .hub-personal-tote-qr{padding:15px 13px}
+ .hub-personal-tote-qr-content{grid-template-columns:1fr;gap:15px}
+ .hub-personal-tote-qr-image{width:242px;height:242px}
+ .hub-personal-tote-qr-side{gap:9px}
+ .hub-personal-tote-qr-side>strong{text-align:center}
+ .hub-personal-tote-qr-actions .btn{flex:1 1 120px}
+ .hub-personal-tote-qr-note{text-align:center}
+}
