@@ -14,28 +14,28 @@ home=async function(){
   card.id='cometPersonalCard';
   card.setAttribute('aria-labelledby','cometPersonalTitle');
   card.innerHTML='<div class="comet-home-heading">'+
-    '<div><span class="comet-home-eyebrow comet-home-season">OFFICIAL FAW COMET · 2026/27</span>'+
-    '<h3 id="cometPersonalTitle">My season stats</h3><p>Your competitive football, all in one place.</p></div>'+
-    '<span class="comet-home-mark" aria-label="FAW statistics">FAW<br>STATS</span>'+
+    '<div><span class="comet-home-eyebrow comet-home-season">CLUB STATS · 2026/27</span>'+
+    '<h3 id="cometPersonalTitle">My season stats</h3><p>Your season totals, including documented club corrections.</p></div>'+
+    '<span class="comet-home-mark" aria-label="Club statistics">CLUB<br>STATS</span>'+
     '</div><div class="comet-home-body comet-loading" id="cometPersonalContent" aria-live="polite">Loading your statistics…</div>';
   if(availability)availability.insertAdjacentElement('afterend',card);
   else if(dash)dash.insertAdjacentElement('beforebegin',card);
   else if(fixture)fixture.insertAdjacentElement('afterend',card);
   else root.appendChild(card);
   const element=card.querySelector('#cometPersonalContent');
-  const {data,error}=await sb.from('comet_my_player_stats')
+  const {data,error}=await sb.from('club_adjusted_my_player_stats')
     .select('season,appearances,starts,goals,yellows,reds,minutes_played')
     .eq('player_id',myPlayer).order('season',{ascending:false}).limit(10);
   if(!card.isConnected||!element)return;
   if(error){
-    element.textContent='Official COMET statistics are temporarily unavailable. Please try again shortly.';
+    element.textContent='Club season statistics are temporarily unavailable. Please try again shortly.';
     return;
   }
   const rows=(data||[]).filter(x=>x.season);
   const stats=rows[0]||(data||[])[0]||null;
   if(stats){
     const season=String(stats.season||'Current season');
-    card.querySelector('.comet-home-season').textContent='OFFICIAL FAW COMET · '+season;
+    card.querySelector('.comet-home-season').textContent='CLUB STATS · '+season;
   }
   const tiles=[
     ['Appearances',stats?.appearances||0,'is-primary'],
@@ -52,7 +52,7 @@ home=async function(){
       Number(value).toLocaleString('en-GB')+'</strong></div>').join('')+
     '</div>'+
     (!stats?'<p class="comet-home-empty-note">No competitive appearances are currently linked to your account. If you have not made your debut yet, these zeroes are expected. Already played? Ask the Chair to check your COMET link.</p>':'')+
-    '<div class="comet-home-footer"><p>Official FAW records · Updated after the club COMET sync</p>'+
+    '<div class="comet-home-footer"><p>Based on COMET with documented club-only adjustments · Not an official FAW record</p>'+
     '<button type="button" class="comet-home-view" id="cometViewSquadStats">View full stats</button></div>';
   const button=card.querySelector('#cometViewSquadStats');
   if(button)button.onclick=()=>{tab='stats';drawNav();render(tab)};
