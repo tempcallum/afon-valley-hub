@@ -57,7 +57,7 @@ async function avfcShowPrizeClaim(){
     '<label class="avfc-prize-consent"><input type="checkbox" name="agree" required><span>I confirm these are the details I want Afon Valley FC to use to pay my prize.</span></label>'+
     '<button class="btn primary" type="submit">Send bank details securely</button>'+
     '<p id="avfcPrizeClaimStatus" class="muted" aria-live="polite" role="status"></p></form>'+
-    '<div class="avfc-prize-safety"><strong>Your payment is handled by the club.</strong> We will never ask for your banking password, card number or one-time security code. Never send your account details through WhatsApp or by replying to an email.</div></div>';
+    '<div class="avfc-prize-safety"><strong>Your payment is handled by the club.</strong> We will never ask for your banking password, card number or one-time security code. Never send your account details through WhatsApp or by replying to an email.<p>We collect these details solely to pay your prize, restrict access to the Chair and Treasurer, and delete the account details when the payment is marked paid. We keep the financial payout audit record. For questions, corrections or your data rights, contact afonvalleyafc@gmail.com. Read the <a href="./tote-privacy.html" target="_blank" rel="noopener noreferrer">Tote Privacy Notice</a>.</p></div></div>';
   const form=wrap.querySelector('#avfcPrizeClaimForm');
   form.onsubmit=async e=>{
     e.preventDefault();
