@@ -165,3 +165,23 @@
  .chair-hub-share,.chair-hub-share-admin{align-items:stretch;flex-direction:column}
  .chair-hub-share .btn,.chair-hub-share-admin .btn{width:100%}
 }
+
+/* Weekly Tote, presented in Player view under Club rather than Money management. */
+.hub-player-tote{display:grid;gap:15px}
+.hub-player-tote-heading{padding:20px 21px;border-radius:17px;background:linear-gradient(120deg,#075333,#073b29);color:white}
+.hub-player-tote-heading .eyebrow{color:#f0d869}
+.hub-player-tote-heading h2{font-size:28px;margin:5px 0;line-height:1.2;color:white}
+.hub-player-tote-heading p{font-size:13px;color:#daede0;line-height:1.6;margin:5px 0 0}
+.hub-player-tote-prizes{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.hub-player-tote-prizes>div{min-width:0;padding:19px 16px;background:#f8faf8;border:1px solid #d8e6dc;border-radius:15px}
+.hub-player-tote-prizes span,.hub-player-tote-prizes strong,.hub-player-tote-prizes small{display:block}
+.hub-player-tote-prizes span{font-size:10px;letter-spacing:.09em;font-weight:850;color:#4b7160}
+.hub-player-tote-prizes strong{font-size:29px;line-height:1.3;color:#06472b;margin-top:6px}
+.hub-player-tote-prizes small{font-size:11px;color:#657a6b;line-height:1.4}
+.hub-player-tote-draw{display:flex;justify-content:space-between;gap:14px;align-items:center}
+.hub-player-tote-draw h3{font-size:18px;line-height:1.4;margin:4px 0}
+.hub-player-tote-draw p{margin:4px 0;font-size:12px}
+.hub-player-tote-actions{display:flex;gap:9px;flex-wrap:wrap}
+.hub-player-tote-actions .btn{flex:1 1 150px;min-height:45px;text-align:center;display:inline-flex;align-items:center;justify-content:center}
+.hub-player-tote-note{font-size:11px;color:#688071;line-height:1.7;margin:0}
+@media(max-width:550px){.hub-player-tote-prizes>div{padding:14px 11px}.hub-player-tote-prizes strong{font-size:24px}.hub-player-tote-draw{align-items:flex-start;flex-direction:column;gap:4px}}
