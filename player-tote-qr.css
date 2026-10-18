@@ -5,7 +5,8 @@
 .hub-personal-tote-qr-heading p{font-size:12px;line-height:1.65;margin:0 0 13px;max-width:650px}
 .hub-personal-tote-qr-content{display:grid;grid-template-columns:248px minmax(0,1fr);align-items:center;gap:17px}
 .hub-personal-tote-qr-image{display:flex;align-items:center;justify-content:center;width:248px;height:248px;background:#fff;border:1px solid #e0e9e2;border-radius:17px;padding:16px;margin:auto}
-.hub-personal-tote-qr-image img,.hub-personal-tote-qr-image canvas{display:block!important;max-width:100%;max-height:100%;height:auto!important;width:auto!important;image-rendering:auto}
+.hub-personal-tote-qr-image img{display:block!important;max-width:100%;max-height:100%;height:auto!important;width:auto!important;image-rendering:auto}
+.hub-personal-tote-qr-image canvas{max-width:100%;max-height:100%}
 .hub-personal-tote-qr-side{display:grid;gap:10px}
 .hub-personal-tote-qr-side>strong{font-size:16px;line-height:1.4;color:#144b32}
 .hub-personal-tote-qr-side small{font-size:12px;line-height:1.5;color:#5f7767}
