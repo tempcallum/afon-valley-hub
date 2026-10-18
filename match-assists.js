@@ -1,4 +1,4 @@
-/* Club-recorded assists: separate from FAW COMET appearances/goals. */
+/* COMET Match Events assists with manual club corrections and friendly-match fallback. */
 let avfcAssistsLastMatch=null;
 function avfcAssistsMaps(entries){
   const comet=new Map(),players=new Map();
@@ -27,14 +27,14 @@ function avfcAssistsEnhanceSquad(entries,loadError){
   const map=avfcAssistsMaps(entries).comet;
   const th=document.createElement('th');
   th.className='avfc-assists-col';th.textContent='Assists';
-  th.title='Club-recorded assists (not supplied by the FAW COMET appearance report)';
+  th.title='Assists from COMET Match Events, with club-entered corrections when needed';
   goalHeading.insertAdjacentElement('afterend',th);
   table.querySelectorAll('tbody tr[data-comet-person]').forEach(tr=>{
     const cell=document.createElement('td');
     cell.className='avfc-assists-stat-cell';
     const count=map.get(tr.dataset.cometPerson+'|'+season);
     cell.textContent=avfcAssistsValue(count);
-    cell.title=count===undefined?'No assists recorded yet for this player':'Club-recorded assists';
+    cell.title=count===undefined?'No assists recorded yet for this player':'COMET assists and club-entered corrections';
     if(tr.children[4])tr.insertBefore(cell,tr.children[4]);
     else tr.appendChild(cell);
   });
@@ -52,7 +52,7 @@ function avfcAssistsEnhanceSquad(entries,loadError){
   root.querySelector('.avfc-assists-note')?.remove();
   const note=document.createElement('p');note.className='muted avfc-assists-note';
   note.textContent=loadError?'Club assists are temporarily unavailable. Official COMET statistics are unaffected.':
-    'Assists are entered by Afon Valley club officials, not supplied by FAW COMET. A dash means no assist information has been recorded for that player yet.';
+    'Assists come from FAW COMET Match Events where available, with club-entered assists for missing records. A dash means no assist data is recorded yet.';
   table.closest('.table')?.insertAdjacentElement('afterend',note);
 }
 function avfcAssistsPlayerOptions(players){
@@ -77,7 +77,7 @@ async function avfcAssistsEditor(){
   const matches=(mRes.data||[]).filter(m=>Date.parse(m.match_date)<=Date.now());
   const players=pRes.data||[],records=aRes.data||[];
   panel.innerHTML='<details class="avfc-assists-editor"><summary>Record match assists</summary>'+
-    '<p class="muted">Record each player’s assists for a completed match. The totals appear on the player home screen and squad statistics. These are club records, not COMET figures.</p>'+
+    '<p class="muted">Record manual assists for friendlies or missing COMET records. These count on the player home screen and squad statistics. If you enter a manual value for the same player and fixture, it replaces that player’s COMET assists for that fixture to avoid duplicates.</p>'+
     (!matches.length?'<p class="muted">No completed matches to record yet.</p>':
      '<form id="avfcAssistsForm" class="form">'+
        '<label>Match<select id="avfcAssistMatch">'+matches.map(m=>
@@ -168,5 +168,5 @@ home=async function(){
   tile.title=count===undefined?'No club assists recorded yet':'Club-recorded assists';
   goals.insertAdjacentElement('afterend',tile);
   const footer=card.querySelector('.comet-home-footer p');
-  if(footer)footer.textContent='Official COMET stats · Club awards and assists recorded separately';
+  if(footer)footer.textContent='Official COMET stats and Match Events assists · Club awards recorded separately';
 };
