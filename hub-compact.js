@@ -18,8 +18,8 @@ function avfcCompactGroups(){
  const source=[
    {id:'home',label:'Home',tabs:['home','notifications']},
    {id:'football',label:'Football',tabs:['matchday','availability','players','stats','attendance']},
-   {id:'club',label:'Club',tabs:['events','kit','shop','committee','policies']},
-   {id:'money',label:'Money',tabs:['money','fines','tote']},
+   {id:'club',label:'Club',tabs:player?['events','tote','kit','shop','committee','policies']:['events','kit','shop','committee','policies']},
+   {id:'money',label:'Money',tabs:player?['money','fines']:['money','fines','tote']},
    ...(player?[{id:'account',label:'Account',tabs:['account','details','emergency','calendar']}]:
      [{id:'manage',label:'Manage',tabs:['admin','documents','equipment','emergency','calendar','account','details']}])
  ];
@@ -29,6 +29,7 @@ const avfcOriginalRender=render;
 render=async function(which){
  if(which==='policies')return avfcPlayerPolicies();
  if(which==='matchday')return avfcMatchdayHQ();
+ if(which==='tote'&&isPlayerView())return avfcPlayerTote();
  return avfcOriginalRender(which);
 };
 const avfcOriginalDrawNav=drawNav;
@@ -60,6 +61,53 @@ drawNav=function(){
  });
 };
 
+
+/* Personal Tote view: public information only, with no financial admin methods. */
+async function avfcPlayerTote(){
+ const el=$('#content');
+ if(!el||!profile?.approved||!isPlayerView())return;
+ el.innerHTML='<div class="panel"><h3>Afon Valley Tote</h3><p>Loading the current draw…</p></div>';
+ let data;
+ try{data=await toteApi('tote-public?ref=club')}
+ catch(err){
+   if(tab==='tote'&&el.isConnected)el.innerHTML='<div class="panel">'+
+     '<h3>Afon Valley Tote</h3><p class="muted">Live draw information is temporarily unavailable.</p>'+
+     '<a class="btn primary" href="'+esc(toteLink('club'))+'">Open the public Tote</a></div>';
+   return;
+ }
+ if(tab!=='tote'||!el.isConnected||!isPlayerView())return;
+ const draw=data.current_draw;
+ const live=Boolean(data.payments_live&&draw&&Date.now()<Date.parse(draw.sales_close_at));
+ const formatted=draw?new Date(draw.draw_at).toLocaleString('en-GB',{
+    timeZone:'Europe/London',weekday:'long',day:'numeric',month:'long',
+    hour:'2-digit',minute:'2-digit'}):'Next draw to be confirmed';
+ const cutoff=draw?new Date(draw.sales_close_at).toLocaleTimeString('en-GB',{
+    timeZone:'Europe/London',hour:'2-digit',minute:'2-digit'}):'';
+ el.innerHTML='<section class="hub-player-tote">'+
+    '<div class="hub-player-tote-heading"><span class="eyebrow dark">AFON VALLEY FC</span>'+
+    '<h2>Weekly Tote</h2><p>Support the club for £'+esc(Number(data.ticket_price||1).toFixed(2))+
+    ' per entry, with a chance to win each Friday.</p></div>'+
+    '<div class="hub-player-tote-prizes">'+
+      '<div><span>CURRENT JACKPOT</span><strong>'+esc(pounds(draw?.current_jackpot||0))+
+      '</strong><small>Rolls over if the winning number is not held</small></div>'+
+      '<div><span>WEEKLY PRIZE</span><strong>'+esc(pounds(draw?.weekly_prize||0))+
+      '</strong><small>Chosen from paid tickets</small></div>'+
+    '</div>'+
+    '<div class="panel hub-player-tote-draw">'+
+    '<div><span class="eyebrow dark">NEXT DRAW</span><h3>'+esc(formatted)+'</h3>'+
+    '<p class="muted">'+(draw?'Draw '+esc(String(draw.draw_number))+
+      ' · '+esc(String(draw.sold_tickets||0))+' entries confirmed'+
+      (cutoff?' · Sales close '+esc(cutoff):''):'Awaiting the next draw')+'</p></div>'+
+    '<span class="badge '+(live?'ok':'')+'">'+(live?'ENTRIES OPEN':'ENTRIES CLOSED')+'</span></div>'+
+    '<div class="hub-player-tote-actions">'+
+      '<a class="btn primary" href="'+esc(toteLink('club'))+'">'+
+      (live?'Buy £1 tickets':'View the public Tote')+'</a>'+
+      '<a class="btn" href="./tote-rules.html" target="_blank" rel="noopener noreferrer">Rules & eligibility</a>'+
+    '</div>'+
+    '<p class="hub-player-tote-note">Ages 16+. Tickets are issued after a verified bank transfer. '+
+    'Bank payments and prize administration remain restricted to the Chair and Treasurer. '+
+    'Registration '+esc(data.registration_number||'details in rules')+'.</p></section>';
+}
 
 /* Keep payments near the top and the personal statistics immediately below availability. */
 const avfcPriorHome=home;
