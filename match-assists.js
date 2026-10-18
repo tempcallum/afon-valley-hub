@@ -168,5 +168,5 @@ home=async function(){
   tile.title=count===undefined?'No club assists recorded yet':'Club-recorded assists';
   goals.insertAdjacentElement('afterend',tile);
   const footer=card.querySelector('.comet-home-footer p');
-  if(footer)footer.textContent='Official COMET stats and Match Events assists · Club awards recorded separately';
+  if(footer)footer.textContent='Club statistics from COMET, including documented adjustments · Not an official FAW record';
 };
