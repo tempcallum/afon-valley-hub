@@ -185,3 +185,41 @@
 .hub-player-tote-actions .btn{flex:1 1 150px;min-height:45px;text-align:center;display:inline-flex;align-items:center;justify-content:center}
 .hub-player-tote-note{font-size:11px;color:#688071;line-height:1.7;margin:0}
 @media(max-width:550px){.hub-player-tote-prizes>div{padding:14px 11px}.hub-player-tote-prizes strong{font-size:24px}.hub-player-tote-draw{align-items:flex-start;flex-direction:column;gap:4px}}
+
+/* Player Tote: individual invite QR plus approved-members-only sales leaderboard. */
+.hub-player-tote-personal,.hub-player-tote-leaderboard{min-width:0}
+.hub-player-tote-panel-head h3{margin:5px 0;font-size:19px;color:#11452d;line-height:1.3}
+.hub-player-tote-panel-head .muted{font-size:12px;line-height:1.55;margin:4px 0 14px}
+.hub-player-tote-share{display:grid;grid-template-columns:195px minmax(0,1fr);align-items:center;gap:18px}
+.hub-player-tote-qr{min-height:182px;min-width:0;display:grid;place-items:center;width:190px;margin:0 auto;background:#fff;border:1px solid #d8e8db;border-radius:13px;padding:12px;text-align:center;font-size:12px;color:#647467;line-height:1.45}
+.hub-player-tote-qr canvas,.hub-player-tote-qr img{display:block;max-width:100%!important;height:auto!important}
+.hub-player-tote-share-details{min-width:0}
+.hub-player-tote-share-details>strong{font-size:13px;color:#164b30}
+.hub-player-tote-url{font-size:11px;line-height:1.5;overflow-wrap:anywhere;border:1px solid #dbe7dd;background:#f5faf6;padding:10px;border-radius:9px;margin:7px 0 10px}
+.hub-player-tote-share-buttons{display:flex;flex-wrap:wrap;gap:9px;margin:8px 0 12px}
+.hub-player-tote-share-buttons .btn{min-height:42px;font-size:12px;flex:1 1 110px}
+.hub-player-tote-share-details small{font-size:11px;color:#617869;line-height:1.6;display:block}
+.hub-tote-board-scopes{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0 11px}
+.hub-tote-board-scopes button{border:1px solid #cfe0d3;border-radius:9px;min-height:38px;padding:8px 12px;background:white;color:#1a583a;font-size:12px;font-weight:800;cursor:pointer;flex:1 1 90px}
+.hub-tote-board-scopes button[aria-pressed=true]{background:#0a653c;color:#fff;border-color:#0a653c}
+.hub-tote-board-empty{background:#f8f5e6;color:#675822;border:1px solid #e4dab9;border-radius:9px;padding:11px 12px;font-size:12px;line-height:1.5;margin:10px 0}
+.hub-tote-board-myrank{border:1px solid #bbdbc6;border-radius:10px;background:#edf6ef;color:#0c5836;padding:11px 13px;font-size:12px;margin:9px 0 11px}
+.hub-tote-board-myrank strong{font-weight:900}
+.hub-tote-board-header,.hub-tote-board-row{display:grid;grid-template-columns:35px minmax(0,1fr) 88px;gap:8px;align-items:center}
+.hub-tote-board-header{padding:8px 10px;color:#587563;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.hub-tote-board-row{border-top:1px solid #e2eae3;padding:11px 10px;font-size:12px;line-height:1.4}
+.hub-tote-board-row>span:nth-child(2){min-width:0;overflow-wrap:anywhere;font-weight:750}
+.hub-tote-board-row small{font-weight:600;color:#42764d}
+.hub-tote-board-row>strong{text-align:right;font-size:15px;color:#0f5732}
+.hub-tote-board-row.is-me{background:#f0f9f2;border-radius:7px}
+.hub-tote-board-rank{width:29px;height:29px;display:grid;place-items:center;background:#edf3ee;border-radius:9px;color:#315e42;font-weight:900}
+.hub-tote-board-row.is-me .hub-tote-board-rank{background:#c5e7cf;color:#0b5f38}
+.hub-tote-board-more{margin-top:12px;min-height:40px;width:100%}
+@media(max-width:650px){
+ .hub-player-tote-share{grid-template-columns:1fr;gap:12px}
+ .hub-player-tote-qr{margin:0 auto}
+ .hub-player-tote-share-details{width:100%}
+ .hub-tote-board-header,.hub-tote-board-row{grid-template-columns:32px minmax(0,1fr) 73px;gap:5px}
+ .hub-tote-board-row{padding:10px 5px}
+ .hub-tote-board-scopes button{padding:8px 7px;font-size:11px}
+}
