@@ -1,0 +1,33 @@
+
+/* Optional player-owned personal social links; private from the public website. */
+.avfc-social-edit{margin-top:16px}
+.avfc-social-edit .head{margin-bottom:14px}
+.avfc-social-form{display:grid;gap:12px}
+.avfc-social-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.avfc-social-fields label{display:block;color:#234b36;font-size:12px;font-weight:800}
+.avfc-social-fields input{display:block;width:100%;min-height:43px;font-size:14px;margin-top:5px}
+.avfc-social-consent{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#2b4e3d;font-weight:700;line-height:1.55;margin-top:4px}
+.avfc-social-consent input{flex:none;width:19px;height:19px;margin:0}
+.avfc-social-footnote{font-size:11px;margin:0;color:#688273;line-height:1.5}
+.avfc-social-form>.btn{justify-self:start;min-height:42px}
+.avfc-social-success{padding:10px 12px;background:#eaf6ee;border:1px solid #cfe5d4;border-radius:8px;color:#0c6139;font-size:12px;font-weight:700}
+.avfc-player-profile-link{display:block;background:transparent;border:0;text-align:left;padding:4px 0;color:#0b6a42;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:12px;font-weight:750}
+.avfc-player-profile-link:focus-visible,.avfc-personal-social-link:focus-visible{outline:3px solid #d6b842;outline-offset:3px;border-radius:4px}
+.avfc-player-profile{margin-bottom:15px;scroll-margin-top:24px}
+.avfc-profile-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.avfc-profile-head h3{font-size:22px;line-height:1.2;margin:4px 0}
+.avfc-profile-head p{font-size:12px;margin:4px 0 0}
+.avfc-profile-head .btn{flex:none;min-height:36px;font-size:12px}
+.avfc-social-profile-title{display:grid;gap:4px;margin:15px 0 10px}
+.avfc-social-profile-title strong{font-size:13px;color:#1a5334}
+.avfc-social-profile-title small{font-size:11px;color:#718477}
+.avfc-social-profile-links{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0 13px}
+.avfc-personal-social-link{display:inline-flex;gap:8px;align-items:center;justify-content:center;border-radius:9px;background:#eff7f1;border:1px solid #cde5d4;color:#0e6541;font-size:12px;font-weight:800;text-decoration:none;padding:10px 13px;min-height:39px}
+.avfc-personal-social-link:hover{background:#dff0e4}
+@media(max-width:600px){
+.avfc-social-fields{grid-template-columns:1fr}
+.avfc-social-form>.btn{width:100%}
+.avfc-profile-head h3{font-size:19px}
+.avfc-social-profile-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.avfc-personal-social-link{font-size:11px;padding:10px}
+}
