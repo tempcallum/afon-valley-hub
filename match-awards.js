@@ -184,5 +184,5 @@ home=async function(){
   grid.appendChild(tile);
  }
  const foot=card.querySelector('.comet-home-footer p');
- if(foot)foot.textContent='Official COMET stats · Club match awards recorded separately';
+ if(foot)foot.textContent='Club totals based on COMET with documented adjustments · Awards recorded separately';
 };
