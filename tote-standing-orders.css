@@ -14,3 +14,24 @@
 .standing-sub-inner form{padding:10px 0}
 .tote-standing-admin .head{margin-bottom:10px}
 @media(max-width:530px){.tote-prize-share{grid-template-columns:1fr}.tote-prize-share>p{grid-column:auto}.tote-prize-share>div strong{min-width:65px}}
+
+/* First-step purchase choice on the public Tote */
+.tote-purchase-choice{margin-top:0;margin-bottom:14px;padding:20px}
+.tote-purchase-choice h2{font-size:22px;line-height:1.2;color:#07482b;margin:0 0 6px}
+.tote-purchase-choice>p{margin:0 0 15px;font-size:13px}
+.tote-purchase-choices{border:0;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+.tote-choice-legend{font-size:11px;color:#63766b;font-weight:750;margin-bottom:9px}
+.tote-purchase-option{position:relative;display:flex;align-items:center;gap:12px;min-height:112px;padding:15px 14px;border:2px solid #dce5df;border-radius:15px;cursor:pointer;background:#f8faf8;transition:border-color .15s,background-color .15s,box-shadow .15s}
+.tote-purchase-option:hover{border-color:#9fbca7;background:#f1f8f3}
+.tote-purchase-option.selected{border-color:#137544;background:#edf8ee;box-shadow:0 0 0 1px #137544}
+.tote-purchase-option:focus-within{outline:3px solid #e7c53e;outline-offset:3px}
+.tote-purchase-option input[type=radio]{position:absolute;opacity:0;width:1px;height:1px;left:14px;top:16px}
+.tote-purchase-option-copy{display:flex;flex-direction:column;gap:6px;flex:1}
+.tote-purchase-option-copy strong{font-size:15px;line-height:1.2;color:#123f2a}
+.tote-purchase-option-copy small{font-size:12px;color:#4e6455;font-weight:500;line-height:1.4}
+.tote-purchase-selector{height:23px;width:23px;border:2px solid #91a99a;border-radius:50%;background:#fff;flex:0 0 23px;display:grid;place-items:center}
+.tote-purchase-option.selected .tote-purchase-selector{border-color:#137544;background:#137544}
+.tote-purchase-option.selected .tote-purchase-selector:after{content:"";width:7px;height:7px;border-radius:50%;background:#fff}
+.tote-choice-footer{font-size:11px!important;line-height:1.5!important;margin:15px 0 0!important}
+.tote-choice-footer a{font-weight:750;color:#085b36;text-underline-offset:2px}
+@media(max-width:570px){.tote-purchase-choices{grid-template-columns:1fr}.tote-purchase-option{min-height:82px}.tote-purchase-choice{padding:17px}.tote-purchase-choice h2{font-size:20px}}
