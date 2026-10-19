@@ -1,0 +1,16 @@
+/* Afon Valley Tote: weekly standing-order setup and reconciliation */
+.tote-prize-share{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 0 14px}
+.tote-prize-share>div{display:flex;align-items:center;gap:12px;border:1px solid #c9e4d3;background:#f1f8f3;border-radius:11px;padding:13px 12px}
+.tote-prize-share>div strong{font-size:30px;line-height:1;color:#075b33;white-space:nowrap}
+.tote-prize-share>div span{font-size:12px;line-height:1.35;color:#284a38}
+.tote-prize-share>p{grid-column:1/-1;font-size:11px;margin:0}
+.tote-standing-card{border:1px solid #b8dcc4}
+.tote-standing-card #standingSignupArea{padding-top:12px}
+.tote-standing-card #standingSignupArea[hidden]{display:none}
+.standing-subscriber{border-bottom:1px solid #e1eae4;padding:5px 0}
+.standing-subscriber>summary{cursor:pointer;padding:12px 8px;list-style:revert;font-size:13px}
+.standing-subscriber>summary:hover{background:#f4f8f5}
+.standing-sub-inner{padding:12px;background:#f8faf8;border-radius:8px}
+.standing-sub-inner form{padding:10px 0}
+.tote-standing-admin .head{margin-bottom:10px}
+@media(max-width:530px){.tote-prize-share{grid-template-columns:1fr}.tote-prize-share>p{grid-column:auto}.tote-prize-share>div strong{min-width:65px}}
