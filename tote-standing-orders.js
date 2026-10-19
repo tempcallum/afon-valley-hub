@@ -72,6 +72,7 @@
        'Weekly amount: '+gbp(s.amount_pence)+' · '+Number(s.ticket_count)+' tickets<br>'+
        'Status: <strong>'+safe(s.status==='active'?'Active':'Stopped')+'</strong><br>'+
        '<small>This confirms registration, not receipt of any future payment.</small>'+
+       '<p class="muted">Payee: '+safe(s.bank?.account_name||'')+' · Sort code: '+safe(formatSortCode(s.bank?.sort_code))+' · Account: '+safe(s.bank?.account_number||'')+'</p>'+
        ((s.payments||[]).length?'<h3>Verified payments</h3>'+s.payments.map(p=>
          '<div class="row"><span>'+safe(dateText(p.bank_received_at))+'</span><strong>'+gbp(p.amount_pence)+'</strong></div>').join(''):
          '<p>No payments have been verified yet.</p>')+
