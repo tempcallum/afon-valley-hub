@@ -116,14 +116,17 @@
           waitlist_enabled:data.get('waitlist')==='on',
           status
         };
-        const changed=Object.keys(payload).filter(k=>String(payload[k]??'')!==String(current[k]??''));
-        if(!changed.length){message.textContent='No changes to save.';return}
         btn.textContent='Saving…';
-        const {data:saved,error:saveError}=await sb.from('club_events')
-          .update(payload).eq('id',id).eq('updated_at',current.updated_at)
-          .select('id,updated_at').maybeSingle();
+        const {data:saved,error:saveError}=await sb.rpc('update_club_event_details',{
+          p_event_id:id,p_expected_updated_at:current.updated_at,
+          p_title:payload.title,p_event_date:payload.event_date,
+          p_rsvp_deadline:payload.rsvp_deadline,p_venue:payload.venue,
+          p_description:payload.description,p_price_pence:payload.price_pence,
+          p_capacity:payload.capacity,p_waitlist_enabled:payload.waitlist_enabled,
+          p_status:payload.status
+        });
         if(saveError)throw Error(saveError.message);
-        if(!saved)throw Error('This event was updated by someone else. Reload it and review the latest details before saving.');
+        if(!saved||!['updated','unchanged'].includes(saved.status))throw Error('Could not confirm that the event was saved.');
         await events();
         if($('#eventBody'))await eventDetails(id);
         const confirmation=$('#eventBody');
@@ -131,7 +134,9 @@
           const note=document.createElement('div');
           note.className='success-note avfc-event-edit-success';
           note.setAttribute('role','status');
-          note.textContent='Event updated. Existing RSVPs, payments, attachments and tasks were preserved.';
+          note.textContent=saved.status==='unchanged'?
+            'No event details needed changing. Existing records are unchanged.':
+            'Event updated. Existing RSVPs, payments, attachments and tasks were preserved.';
           confirmation.insertAdjacentElement('afterbegin',note);
         }
       }catch(error){
