@@ -25,7 +25,7 @@
    $('#toteStandingManageBack').onclick=()=>location.href=location.pathname+'?tote=club';
    if(action)action();
  }
- function paymentInstructions(data){
+ function paymentInstructions(data,{demo=false}={}){
    const bank=data.bank||{},token=data.subscription_token;
    const link=makeLink(token);
    const text=['Afon Valley Weekly Tote standing order',
@@ -36,8 +36,9 @@
      'Reference: '+(data.reference||''),
      'Repeat: every Monday',
      'Your private manage link: '+link].join('\n');
-   history.replaceState(null,'',link);
+   if(!demo)history.replaceState(null,'',link);
    $('#totePublicContent').innerHTML='<div class="tote-public-card">'+
+     (demo?'<div class="tote-pending" role="status"><strong>DEMO PREVIEW ONLY</strong> — these are example details, not a real bank account or subscription. No payment can be made using them.</div>':'')+
      '<h2>Your weekly Tote standing order</h2>'+
      '<div class="success-note"><strong>Reference reserved.</strong> No payment has been taken and no tickets have been issued yet.</div>'+
      '<p>Open your bank app and create a <strong>weekly standing order for Monday</strong>. Make sure the recipient bank reference is copied exactly. Keep these instructions.</p>'+
@@ -57,9 +58,16 @@
      '<p class="muted">We only issue tickets after checking the Lloyds payment. Payments received after sales close are held for review, not backdated into a completed draw. The club emails fresh ticket numbers after verification.</p>'+
      '<p class="muted"><strong>Stopping:</strong> You must cancel the standing order in your bank as well as notifying the club. Your private link lets you stop future ticket entries.</p>'+
      '<p><a href="./tote-rules.html" target="_blank" rel="noopener">Full Tote rules</a> · <a href="./?tote=club">Back to Tote</a></p></div>';
-   $('#standingCopyReference').onclick=e=>copyText(data.reference,e.currentTarget);
-   $('#standingCopyAll').onclick=e=>copyText(text,e.currentTarget);
-   $('#standingCopyLink').onclick=e=>copyText(link,e.currentTarget);
+   if(demo){
+     for(const id of ['standingCopyReference','standingCopyAll','standingCopyLink']){
+       const button=$('#'+id);
+       if(button){button.disabled=true;button.title='Example only — real bank details appear after registration';}
+     }
+   }else{
+     $('#standingCopyReference').onclick=e=>copyText(data.reference,e.currentTarget);
+     $('#standingCopyAll').onclick=e=>copyText(text,e.currentTarget);
+     $('#standingCopyLink').onclick=e=>copyText(link,e.currentTarget);
+   }
  }
  async function manage(token){
    mountManagement('Your weekly Tote standing order');
@@ -91,6 +99,20 @@
  showPublicTote=async function(){
    const params=new URLSearchParams(location.search);
    const token=params.get('token');
+   if(publicTote==='standing-preview'){
+     $('#login').classList.add('hidden');
+     $('#shell').classList.add('hidden');
+     $('#totePublic').classList.remove('hidden');
+     $('#toteBack').onclick=()=>location.href=location.pathname+'?tote=club';
+     paymentInstructions({
+       subscription_token:null,
+       reference:'AVS-DEMO-ONLY',
+       amount_pence:500,
+       tickets:5,
+       bank:{account_name:'Example only — not for payment',sort_code:'XX-XX-XX',account_number:'XXXXXXXX'}
+     },{demo:true});
+     return;
+   }
    if(publicTote==='standing'&&token){await manage(token);return}
    await previousPublic();
    if(publicTote==='return'||publicTote==='preview')return;
