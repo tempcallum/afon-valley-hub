@@ -100,15 +100,6 @@
    let info;
    try{info=await toteApi('tote-public?ref='+encodeURIComponent(ref)+(publicTote==='committee'?'&mode=committee':''))}
    catch{return}
-   const card=target.querySelector('.tote-public-card');
-   if(card){
-     const breakdown=document.createElement('div');
-     breakdown.className='tote-prize-share';
-     breakdown.innerHTML='<div><strong>'+Number(info.weekly_prize_percent||0)+'%</strong><span>of ticket sales goes to <b>ONE WEEKLY WINNER</b></span></div>'+
-       '<div><strong>'+Number(info.jackpot_share_percent||0)+'%</strong><span>of ticket sales builds the <b>ROLLING JACKPOT</b></span></div>'+
-       '<p class="muted">You may win a weekly prize and/or the jackpot, but prizes are not guaranteed. <a href="./tote-rules.html" target="_blank" rel="noopener">Full prize allocation and rules</a>.</p>';
-     card.insertBefore(breakdown,card.querySelector('.tote-facts')||card.firstChild);
-   }
    const entryCard=target.querySelector('#publicToteForm')?.closest('.tote-public-card');
    if(!entryCard||!info.payments_live||publicTote==='committee')return;
    const card2=document.createElement('section');
@@ -132,6 +123,47 @@
    entryCard.insertAdjacentElement('afterend',card2);
    const area=card2.querySelector('#standingSignupArea');
    card2.querySelector('#standingOpenForm').onclick=e=>{area.hidden=!area.hidden;e.currentTarget.textContent=area.hidden?'Set up a weekly standing order':'Hide standing-order form'};
+   // Choose the purchase type BEFORE either payment form is shown.
+   // Radio inputs are mutually exclusive: a customer cannot pick both by accident.
+   const chooser=document.createElement('section');
+   chooser.className='tote-public-card tote-purchase-choice';
+   chooser.innerHTML='<h2>How would you like to play?</h2>'+
+     '<p>Choose one option to continue.</p>'+
+     '<fieldset class="tote-purchase-choices"><legend class="tote-choice-legend">Ticket purchase type</legend>'+
+       '<label class="tote-purchase-option"><input type="radio" name="totePurchaseType" value="once">'+
+         '<span class="tote-purchase-option-copy"><strong>One draw only</strong>'+
+           '<small>Buy tickets for this Friday’s draw. Make a single payment.</small></span>'+
+         '<span class="tote-purchase-selector" aria-hidden="true"></span></label>'+
+       '<label class="tote-purchase-option"><input type="radio" name="totePurchaseType" value="weekly">'+
+         '<span class="tote-purchase-option-copy"><strong>Every week</strong>'+
+           '<small>Set up a weekly standing order. Fresh tickets after each payment is verified.</small></span>'+
+         '<span class="tote-purchase-selector" aria-hidden="true"></span></label>'+
+     '</fieldset>'+
+     '<p class="tote-choice-footer">Entries are £1 each. Prize rules, winning chances and use of proceeds are in the '+
+       '<a href="./tote-rules.html" target="_blank" rel="noopener noreferrer">full Tote rules</a>.</p>';
+   target.insertBefore(chooser,target.firstChild);
+   entryCard.hidden=true;
+   card2.hidden=true;
+   entryCard.style.display='none';
+   card2.style.display='none';
+   chooser.querySelectorAll('input[name="totePurchaseType"]').forEach(radio=>{
+     radio.addEventListener('change',()=>{
+       if(!radio.checked)return;
+       const once=radio.value==='once';
+       entryCard.hidden=!once;
+       card2.hidden=once;
+       entryCard.style.display=once?'':'none';
+       card2.style.display=once?'none':'';
+       const weeklyArea=card2.querySelector('#standingSignupArea');
+       if(weeklyArea)weeklyArea.hidden=false;
+       const openButton=card2.querySelector('#standingOpenForm');
+       if(openButton){openButton.hidden=true;openButton.style.display='none'}
+       chooser.querySelectorAll('.tote-purchase-option').forEach(label=>
+         label.classList.toggle('selected',label.querySelector('input')?.checked===true));
+       const chosen=once?entryCard:card2;
+       chosen.scrollIntoView({behavior:'smooth',block:'start'});
+     });
+   });
    const form=card2.querySelector('#standingSignup');
    form.onsubmit=async e=>{
      e.preventDefault();
