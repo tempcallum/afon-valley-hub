@@ -1,0 +1,23 @@
+/* Club event editor: consistent mobile-friendly officer controls */
+.avfc-event-edit-panel{margin-top:14px;margin-bottom:16px;border:1px solid #bed6c8;background:#fff}
+.avfc-event-edit-panel>.head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.avfc-event-edit-panel .form{max-width:100%}
+.avfc-event-edit-panel label{min-width:0}
+.avfc-event-edit-panel .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.avfc-event-edit-panel input,.avfc-event-edit-panel textarea,.avfc-event-edit-panel select{width:100%;max-width:100%}
+.avfc-event-edit-panel textarea{min-height:106px;resize:vertical}
+.avfc-event-edit-tip{border-left:3px solid #8db4a0;padding:9px 12px;background:#f2f7f3;color:#456050;font-size:12px;line-height:1.5}
+.avfc-event-edit-panel .actions{display:flex;gap:8px;flex-wrap:wrap}
+.avfc-event-edit-panel [role=alert]{font-size:13px;color:#a32922;font-weight:700}
+.avfc-event-edit-success{margin:12px 0}
+.avfc-past-events{margin-top:18px;margin-bottom:18px}
+.avfc-past-events>summary{font-weight:800;cursor:pointer}
+.avfc-past-events .avfc-event-past-entry{border:0;width:100%;background:transparent;text-align:left;cursor:pointer;min-height:60px}
+.avfc-past-events .avfc-event-past-entry:hover{background:#f2f6f3}
+.avfc-past-events .avfc-event-past-entry small{color:#6d7b72}
+.event-head-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+@media(max-width:600px){
+ .avfc-event-edit-panel .form-grid{grid-template-columns:1fr}
+ .avfc-event-edit-panel>.head{flex-wrap:wrap}
+ .avfc-event-edit-panel>.head>.btn{flex-shrink:0}
+}
