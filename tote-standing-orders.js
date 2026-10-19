@@ -105,7 +105,7 @@
      breakdown.className='tote-prize-share';
      breakdown.innerHTML='<div><strong>'+Number(info.weekly_prize_percent||0)+'%</strong><span>of ticket sales goes to <b>ONE WEEKLY WINNER</b></span></div>'+
        '<div><strong>'+Number(info.jackpot_share_percent||0)+'%</strong><span>of ticket sales builds the <b>ROLLING JACKPOT</b></span></div>'+
-       '<p class="muted">You may win a weekly prize and/or the jackpot, but prizes are not guaranteed. The remaining '+Number(info.club_share_percent||0)+'% supports the club. <a href="./tote-rules.html" target="_blank" rel="noopener">Full prize allocation and rules</a>.</p>';
+       '<p class="muted">You may win a weekly prize and/or the jackpot, but prizes are not guaranteed. <a href="./tote-rules.html" target="_blank" rel="noopener">Full prize allocation and rules</a>.</p>';
      card.insertBefore(breakdown,card.querySelector('.tote-facts')||card.firstChild);
    }
    const entryCard=target.querySelector('#publicToteForm')?.closest('.tote-public-card');
