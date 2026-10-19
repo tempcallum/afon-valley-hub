@@ -40,8 +40,8 @@
    $('#totePublicContent').innerHTML='<div class="tote-public-card">'+
      (demo?'<div class="tote-pending" role="status"><strong>DEMO PREVIEW ONLY</strong> — these are example details, not a real bank account or subscription. No payment can be made using them.</div>':'')+
      '<h2>Your weekly Tote standing order</h2>'+
-     '<div class="success-note"><strong>Reference reserved.</strong> No payment has been taken and no tickets have been issued yet.</div>'+
-     '<p>Open your bank app and create a <strong>weekly standing order for Monday</strong>. Make sure the recipient bank reference is copied exactly. Keep these instructions.</p>'+
+     '<div class="success-note">'+(demo?'<strong>Example reference.</strong> No subscription has been created and no payment is possible from this preview.':'<strong>Reference reserved.</strong> No payment has been taken and no tickets have been issued yet.')+'</div>'+
+     (demo?'<p>This is the instruction screen a buyer sees after registering. They would set up a <strong>weekly Monday standing order</strong> with the permanent reference shown.</p>':'<p>Open your bank app and create a <strong>weekly standing order for Monday</strong>. Make sure the recipient bank reference is copied exactly. Keep these instructions.</p>')+
      '<div class="tote-bank-reference"><div class="tote-bank-reference-title">PERMANENT BANK REFERENCE — NEVER CHANGE</div>'+
        '<strong class="tote-bank-reference-code">'+safe(data.reference)+'</strong>'+
        '<p>This identifies you every week. Your individual ticket numbers will be different for each draw.</p>'+
@@ -57,7 +57,7 @@
        '<button type="button" id="standingCopyLink" class="btn">Copy private management link</button></div>'+
      '<p class="muted">We only issue tickets after checking the Lloyds payment. Payments received after sales close are held for review, not backdated into a completed draw. The club emails fresh ticket numbers after verification.</p>'+
      '<p class="muted"><strong>Stopping:</strong> You must cancel the standing order in your bank as well as notifying the club. Your private link lets you stop future ticket entries.</p>'+
-     '<p><a href="./tote-rules.html" target="_blank" rel="noopener">Full Tote rules</a> · <a href="./?tote=club">Back to Tote</a></p></div>';
+     '<p><a href="./tote-rules.html" target="_blank" rel="noopener">Full Tote rules</a> · <a href="./?tote=club">'+(demo?'Go to live Tote':'Back to Tote')+'</a></p></div>';
    if(demo){
      for(const id of ['standingCopyReference','standingCopyAll','standingCopyLink']){
        const button=$('#'+id);
