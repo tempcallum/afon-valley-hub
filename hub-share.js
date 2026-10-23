@@ -52,8 +52,9 @@ home=async function(){
 
 const avfcPreviousAdminExtrasForHubSharing=renderAdminExtras;
 renderAdminExtras=async function(){
+ if(tab!=='admin'||!profile?.approved||profile.role!=='chair'||isPlayerView())return;
  await avfcPreviousAdminExtrasForHubSharing();
- if(!profile?.approved||profile.role!=='chair'||isPlayerView())return;
+ if(tab!=='admin'||!profile?.approved||profile.role!=='chair'||isPlayerView())return;
  const area=$('#content'),panel=area?.querySelector('.direct-reg-admin-share');
  if(!panel||panel.querySelector('.chair-hub-share-admin'))return;
  panel.insertAdjacentHTML('beforeend',
