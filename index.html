@@ -379,19 +379,22 @@ async function equipment(){
   let week=mondayOf(new Date());
   const load=async()=>{
     const weekKey=ymd(week);
-    const [{data:items,error:ie},{data:ps,error:pe},{data:as,error:ae}]=await Promise.all([
+    const [{data:items,error:ie},{data:ps,error:pe},{data:as,error:ae},{data:officers,error:oe}]=await Promise.all([
       sb.from('equipment_items').select('*').eq('active',true).order('display_order').order('name'),
       sb.from('players').select('id,name').eq('status','active').order('name'),
-      sb.from('equipment_assignments').select('*').eq('week_start',weekKey)
+      sb.from('equipment_assignments').select('*').eq('week_start',weekKey),
+      sb.rpc('equipment_nonplaying_officers')
     ]);
-    if(ie||pe||ae)return $('#content').innerHTML='<div class="panel empty">'+esc((ie||pe||ae).message)+'</div>';
-    const assignment=new Map((as||[]).map(x=>[x.equipment_item_id,x.holder_player_id]));
+    if(ie||pe||ae||oe)return $('#content').innerHTML='<div class="panel empty">'+esc((ie||pe||ae||oe).message)+'</div>';
+    const holderValue=x=>x.holder_officer_id?'officer:'+x.holder_officer_id:(x.holder_player_id?'player:'+x.holder_player_id:'');
+    const assignment=new Map((as||[]).map(x=>[x.equipment_item_id,holderValue(x)]));
+    const officialOptions=(officers||[]).map(o=>'<option value="officer:'+esc(o.id)+'">'+esc(o.display_name)+' ('+esc(o.role==='manager'?'Manager':'Club official')+')</option>').join('');
     $('#content').innerHTML='<div class="panel equipment-panel"><div class="head"><div><span class="eyebrow dark">EQUIPMENT OFFICER</span><h3>Who has what?</h3><p class="muted">Set where the club equipment is for each week so everyone knows who is responsible for bringing it.</p></div></div>'+
       '<div class="equipment-weekbar"><button id="eqPrev" class="btn">‹ Previous</button><div><small>WEEK COMMENCING</small><strong>'+prettyWeek(week)+'</strong></div><button id="eqThis" class="btn">This week</button><button id="eqNext" class="btn">Next ›</button></div>'+
-      '<div class="equipment-list">'+((items||[]).length?(items||[]).map(item=>'<div class="equipment-row"><div class="equipment-name"><span class="equipment-icon">EQ</span><strong>'+esc(item.name)+'</strong></div><label><span>Current holder</span><select data-equipment="'+item.id+'"><option value="">Unassigned</option>'+(ps||[]).map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('')+'</select></label></div>').join(''):'<div class="empty">No equipment has been added yet.</div>')+'</div>'+
+      '<div class="equipment-list">'+((items||[]).length?(items||[]).map(item=>'<div class="equipment-row"><div class="equipment-name"><span class="equipment-icon">EQ</span><strong>'+esc(item.name)+'</strong></div><label><span>Current holder</span><select data-equipment="'+item.id+'"><option value="">Unassigned</option><optgroup label="Players">'+(ps||[]).map(p=>'<option value="player:'+p.id+'">'+esc(p.name)+'</option>').join('')+'</optgroup>'+(officialOptions?'<optgroup label="Club officials">'+officialOptions+'</optgroup>':'')+'</select></label></div>').join(''):'<div class="empty">No equipment has been added yet.</div>')+'</div>'+
       '<div class="equipment-actions"><button id="eqCopy" class="btn">Copy previous week</button><button id="eqSave" class="btn primary">Save this week</button></div></div>'+
       '<div class="panel"><span class="eyebrow dark">EQUIPMENT LIST</span><h3>Add equipment</h3><p class="muted">Add anything the club needs to keep track of, such as bibs, first-aid bags or a pump.</p><form id="equipmentAddForm" class="form-grid"><label>Equipment name<input name="name" placeholder="e.g. Bibs" required></label><button class="btn primary">Add item</button></form></div>';
-    for(const item of items||[]){const s=$('[data-equipment="'+item.id+'"]');if(s)s.value=assignment.get(item.id)?String(assignment.get(item.id)):''}
+    for(const item of items||[]){const s=$('[data-equipment="'+item.id+'"]');if(s)s.value=assignment.get(item.id)||''}
     $('#eqPrev').onclick=()=>{week.setDate(week.getDate()-7);load()};
     $('#eqNext').onclick=()=>{week.setDate(week.getDate()+7);load()};
     $('#eqThis').onclick=()=>{week=mondayOf(new Date());load()};
@@ -400,12 +403,12 @@ async function equipment(){
       const {data:prevRows,error}=await sb.from('equipment_assignments').select('*').eq('week_start',ymd(prev));
       if(error)return alert(error.message);
       if(!(prevRows||[]).length)return alert('There are no saved equipment holders for the previous week.');
-      const prevMap=new Map((prevRows||[]).map(x=>[x.equipment_item_id,x.holder_player_id]));
-      for(const item of items||[]){const s=$('[data-equipment="'+item.id+'"]');if(s)s.value=prevMap.get(item.id)?String(prevMap.get(item.id)):''}
+      const prevMap=new Map((prevRows||[]).map(x=>[x.equipment_item_id,holderValue(x)]));
+      for(const item of items||[]){const s=$('[data-equipment="'+item.id+'"]');if(s)s.value=prevMap.get(item.id)||''}
     };
     $('#eqSave').onclick=async()=>{
       const btn=$('#eqSave');btn.disabled=true;btn.textContent='Saving…';
-      const rows=(items||[]).map(item=>{const v=$('[data-equipment="'+item.id+'"]').value;return {equipment_item_id:item.id,week_start:weekKey,holder_player_id:v?Number(v):null,updated_at:new Date().toISOString(),updated_by:user.id}});
+      const rows=(items||[]).map(item=>{const v=$('[data-equipment="'+item.id+'"]').value;return {equipment_item_id:item.id,week_start:weekKey,holder_player_id:v.startsWith('player:')?Number(v.slice(7)):null,holder_officer_id:v.startsWith('officer:')?v.slice(8):null,updated_at:new Date().toISOString(),updated_by:user.id}});
       const {error}=rows.length?await sb.from('equipment_assignments').upsert(rows,{onConflict:'equipment_item_id,week_start'}):{error:null};
       if(error){btn.disabled=false;btn.textContent='Save this week';return alert(error.message)}
       btn.textContent='Saved';
