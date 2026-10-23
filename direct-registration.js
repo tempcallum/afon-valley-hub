@@ -110,9 +110,10 @@ function showDirectPlayerRegistration(){
 
 const originalDirectRegAdminExtras=renderAdminExtras;
 renderAdminExtras=async function(){
+ if(tab!=='admin'||!profile?.approved||profile?.role!=='chair'||isPlayerView())return;
  await originalDirectRegAdminExtras();
- if(profile?.role!=='chair'||isPlayerView())return;
- const area=$('#content');if(!area)return;
+ if(tab!=='admin'||!profile?.approved||profile?.role!=='chair'||isPlayerView())return;
+ const area=$('#content');if(!area||!area.querySelector('[data-r]'))return;
  area.insertAdjacentHTML('afterbegin','<div class="panel direct-reg-admin-share">'+
   '<span class="eyebrow dark">NEW PLAYER REGISTRATION</span><h3>Send a registration form</h3>'+
   '<p class="muted">Copy the link and send it to the player. No Hub login needed. When they return the form, register them in COMET, then add and approve their Hub account yourself.</p>'+
@@ -128,6 +129,7 @@ renderAdminExtras=async function(){
  };
  const {data:items,error}=await sb.from('direct_player_registrations')
   .select('id,full_name,email,phone,details,status,submitted_at').order('submitted_at',{ascending:false}).limit(100);
+ if(tab!=='admin'||!profile?.approved||profile?.role!=='chair'||isPlayerView()||!area.querySelector('.direct-reg-admin-share'))return;
  if(error){area.querySelector('.direct-reg-admin-share').insertAdjacentHTML('afterend','<div class="panel">Could not load registration submissions.</div>');return;}
  const rows=items||[];
  const activeRows=rows.filter(r=>r.status!=='hub_added');
