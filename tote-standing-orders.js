@@ -130,10 +130,13 @@
      '<p>Set up a weekly standing order using one permanent bank reference. After each payment is confirmed, we allocate fresh ticket numbers and email your tickets. No card subscription required.</p>'+
      '<button type="button" class="btn primary" id="standingOpenForm">Set up a weekly standing order</button>'+
      '<div id="standingSignupArea" hidden><form id="standingSignup" class="form">'+
-       '<label>Tickets each week<select name="count" required>'+
+       '<label>Tickets each week<select name="count" id="standingTicketCount" required>'+
          '<option value="1">1 ticket — £1 every week</option><option value="5">5 tickets — £5 every week</option>'+
          '<option value="10">10 tickets — £10 every week</option><option value="20">20 tickets — £20 every week</option>'+
+         '<option value="custom">Custom number of tickets</option>'+
        '</select></label>'+
+       '<label id="standingCustomCountWrap" hidden>Custom tickets per week (1–100)<input id="standingCustomCount" type="number" min="1" max="100" step="1" inputmode="numeric" value="3"></label>'+
+       '<p class="muted" id="standingWeeklyTotal" role="status" aria-live="polite">Weekly payment: £1.00 for 1 ticket</p>'+
        '<div class="tote-form-grid"><label>Full name<input name="name" autocomplete="name" required></label>'+
          '<label>Email<input name="email" type="email" autocomplete="email" maxlength="200" required></label>'+
          '<label>Confirm email<input name="repeat" type="email" autocomplete="off" maxlength="200" required></label></div>'+
@@ -187,15 +190,35 @@
      });
    });
    const form=card2.querySelector('#standingSignup');
+   const weeklySelect=form.querySelector('#standingTicketCount');
+   const customWrap=form.querySelector('#standingCustomCountWrap');
+   const customInput=form.querySelector('#standingCustomCount');
+   const totalLabel=form.querySelector('#standingWeeklyTotal');
+   const readWeeklyCount=()=>weeklySelect.value==='custom'?Number(customInput.value):Number(weeklySelect.value);
+   const updateWeeklyCount=()=>{
+     const custom=weeklySelect.value==='custom';
+     customWrap.hidden=!custom;
+     customInput.required=custom;
+     const count=readWeeklyCount();
+     const valid=Number.isInteger(count)&&count>=1&&count<=100;
+     totalLabel.textContent=valid?'Weekly payment: '+gbp(count*100)+' for '+count+' ticket'+(count===1?'':'s'):
+       'Enter a whole number of tickets between 1 and 100.';
+     form.querySelector('[type=submit]').disabled=!valid;
+   };
+   weeklySelect.addEventListener('change',updateWeeklyCount);
+   customInput.addEventListener('input',updateWeeklyCount);
+   updateWeeklyCount();
    form.onsubmit=async e=>{
      e.preventDefault();
      const fd=new FormData(form);
+     const weeklyCount=readWeeklyCount();
+     if(!Number.isInteger(weeklyCount)||weeklyCount<1||weeklyCount>100)return alert('Choose a whole number from 1 to 100 weekly tickets.');
      const email=String(fd.get('email')||'').trim().toLowerCase(),repeat=String(fd.get('repeat')||'').trim().toLowerCase();
      if(!email||email!==repeat)return alert('Please enter matching email addresses.');
      const button=form.querySelector('[type=submit]');button.disabled=true;button.textContent='Preparing your reference…';
      try{
        const out=await api({action:'signup',name:fd.get('name'),email,email_confirm:repeat,mobile:fd.get('mobile'),
-         ticket_count:Number(fd.get('count')),age_confirmed:fd.get('age')==='on',terms_confirmed:fd.get('age')==='on',ref});
+         ticket_count:weeklyCount,age_confirmed:fd.get('age')==='on',terms_confirmed:fd.get('age')==='on',ref});
        paymentInstructions(out);
      }catch(err){button.disabled=false;button.textContent='Get my permanent bank reference';alert(err.message)}
    };
