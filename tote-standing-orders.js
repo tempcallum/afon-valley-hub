@@ -250,8 +250,7 @@
    label.innerHTML='<strong>'+subs.filter(s=>s.status==='active').length+' active standing orders</strong> · '+
      (open?'Draw '+Number(open.draw_number)+' closes '+safe(dateText(open.sales_close_at)):'No eligible draw currently open')+
      ' · '+paidThisDraw.size+' subscriptions already allocated this draw.';
-   list.innerHTML=subs.length?
-     '<div class="list">'+subs.map(s=>{
+   const renderStandingSubscriber=s=>{
        const entered=paidThisDraw.has(s.id),last=bySub.get(s.id);
        return '<details class="standing-subscriber"><summary><strong>'+safe(s.buyer_name)+'</strong> · '+safe(s.bank_reference)+
          ' · '+gbp(s.amount_pence)+'/week · '+safe(s.status)+
@@ -270,8 +269,17 @@
              '</div><button type="submit" class="btn primary">Verify and issue '+Number(s.ticket_count)+' tickets</button></form>')+
            (profile.role==='chair'&&s.status==='active'?'<p><button type="button" class="btn" data-standing-cancel="'+safe(s.id)+'">Stop this subscriber</button></p>':'')+
          '</div></details>';
-     }).join('')+'</div>':
-     '<p class="muted">No weekly standing orders yet. New subscribers will appear here automatically.</p>';
+     };
+   const activeSubs=subs.filter(s=>s.status==='active');
+   const cancelledSubs=subs.filter(s=>s.status!=='active');
+   list.innerHTML=
+     '<div class="standing-active-list"><h4>Active standing orders ('+activeSubs.length+')</h4>'+
+       (activeSubs.length?'<div class="list">'+activeSubs.map(renderStandingSubscriber).join('')+'</div>':
+         '<p class="muted">No active standing orders at the moment.</p>')+'</div>'+
+     (cancelledSubs.length?
+       '<details class="tote-standing-history"><summary>Cancelled standing orders ('+cancelledSubs.length+')</summary>'+
+         '<div class="tote-standing-history-inner"><p class="muted">Retained for financial records. Cancelled subscriptions cannot receive new draw entries.</p>'+
+         '<div class="list">'+cancelledSubs.map(renderStandingSubscriber).join('')+'</div></div></details>':'');
    list.querySelectorAll('form.standing-confirm').forEach(form=>form.onsubmit=async e=>{
      e.preventDefault();
      const id=form.dataset.standingId,sub=subs.find(x=>x.id===id),data=new FormData(form);
