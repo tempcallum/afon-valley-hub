@@ -35,3 +35,12 @@
 .tote-choice-footer{font-size:11px!important;line-height:1.5!important;margin:15px 0 0!important}
 .tote-choice-footer a{font-weight:750;color:#085b36;text-underline-offset:2px}
 @media(max-width:570px){.tote-purchase-choices{grid-template-columns:1fr}.tote-purchase-option{min-height:82px}.tote-purchase-choice{padding:17px}.tote-purchase-choice h2{font-size:20px}}
+
+/* Keep cancelled subscribers available for audit without cluttering the active list. */
+.standing-active-list h4{margin:12px 0 8px;font-size:15px;color:#075b37}
+.tote-standing-history{margin-top:16px;border:1px solid #d7e4dc;border-radius:14px;background:#f7faf8;overflow:hidden}
+.tote-standing-history>summary{cursor:pointer;padding:14px 16px;font-weight:850;color:#365945;list-style:revert;list-style-position:inside}
+.tote-standing-history>summary:focus-visible{outline:3px solid #edc737;outline-offset:-3px}
+.tote-standing-history[open]>summary{border-bottom:1px solid #d7e4dc;background:#eef5f0}
+.tote-standing-history-inner{padding:10px 14px 14px}
+.tote-standing-history-inner>.muted{font-size:12px;margin:4px 0 9px}
