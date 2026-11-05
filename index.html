@@ -405,8 +405,8 @@ async function fines(){
       if(!fine||!slot)return;
       if(slot.innerHTML.trim()){slot.innerHTML='';return}
       $('#fineResults').querySelectorAll('[data-fine-editor]').forEach(x=>x.innerHTML='');
-      const options=ps.some(p=>Number(p.id)===Number(fine.player_id))?ps:
-        [{id:fine.player_id,name:fine.players?.name||'Current player'},...ps];
+      const options=(ps||[]).some(p=>Number(p.id)===Number(fine.player_id))?(ps||[]):
+        [{id:fine.player_id,name:fine.players?.name||'Current player'},...(ps||[])];
       const hasPaid=Number(fine.paid_pence||0)>0;
       slot.innerHTML='<form class="fine-edit-form" data-fine-edit-form="'+id+'">'+
         '<h4>Edit fine</h4>'+
@@ -433,7 +433,7 @@ async function fines(){
         const playerId=hasPaid?Number(fine.player_id):Number(fd.get('player'));
         const msg=form.querySelector('.fine-edit-error');
         msg.textContent='';
-        if(!/^\\d+(?:\\.\\d{1,2})?$/.test(rawAmount)||!Number.isSafeInteger(amountPence)||amountPence<=0){
+        if(!/^\d+(?:\.\d{1,2})?$/.test(rawAmount)||!Number.isSafeInteger(amountPence)||amountPence<=0){
           msg.textContent='Enter a valid amount with no more than two decimal places.';return;
         }
         if(!reason||reason.length<2||reason.length>150||monthType.test(reason)||/imported total/i.test(reason)){
