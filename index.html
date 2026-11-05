@@ -124,6 +124,18 @@ input,select,textarea{border-radius:14px;background:#fbfcfb;border-color:#d1dbd4
 .avfc-location-actions{display:flex;gap:8px;flex-wrap:wrap}
 .avfc-location-actions .btn{background:white;color:#075b37;border-color:#bdd5c6;min-height:42px}
 @media(max-width:620px){.tote-entry-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Fine editor for approved Chair and Fines Administrators */
+.fine-edit-slot:empty{display:none}
+.fine-edit-slot{margin-top:12px}
+.fine-edit-form{background:#f5faf6;border:1px solid #c9dfcf;border-radius:15px;padding:14px}
+.fine-edit-form h4{font-size:17px;color:#075b37;margin:0 0 12px}
+.fine-edit-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fine-edit-fields label{display:block;min-width:0}
+.fine-edit-help{font-size:12px;line-height:1.5;margin:12px 0}
+.fine-edit-form .actions{display:flex;flex-wrap:wrap}
+.fine-edit-error{min-height:0;margin:4px 0 9px}
+@media(max-width:640px){.fine-edit-fields{grid-template-columns:1fr}.fine-edit-form{padding:12px}}
 </style><link rel="stylesheet" href="./comet-home.css?v=1"><link rel="stylesheet" href="./direct-registration.css?v=3"><link rel="stylesheet" href="./hub-compact.css?v=5"><link rel="stylesheet" href="./comet-clearance.css?v=1"><link rel="stylesheet" href="./match-awards.css?v=1"><link rel="stylesheet" href="./previous-results.css?v=2"><link rel="stylesheet" href="./tote-registration.css?v=2"><link rel="stylesheet" href="./tote-gmail-setup.css?v=2"><link rel="stylesheet" href="./event-official-rsvp.css?v=1"><link rel="stylesheet" href="./tote-live-sync.css?v=1"><link rel="stylesheet" href="./notification-tracker.css?v=1"><link rel="stylesheet" href="./tote-prize-claim.css?v=1"><link rel="stylesheet" href="./player-social-links.css?v=1"><link rel="stylesheet" href="./tote-standing-orders.css?v=3">
 <link rel="stylesheet" href="./event-edit.css?v=1"></head><body>
 <section id="totePublic" class="tote-public hidden"><div class="tote-public-wrap"><div class="tote-public-head"><div class="tote-public-brand"><img src="avfc-logo.jpg" alt="Afon Valley FC crest"><div><strong>Afon Valley Tote</strong><span>Support the club. Be in the draw.</span></div></div><button id="toteBack" class="tote-back">Club Hub</button></div><div id="totePublicContent"><div class="tote-public-card">Loading Tote…</div></div></div></section><section id="joinPublic" class="join-public hidden"><div class="join-public-wrap"><div class="join-public-head"><div class="join-brand"><img src="avfc-logo.jpg" alt="Afon Valley FC crest"><div><strong>Join Afon Valley FC</strong><span>Player application</span></div></div><button id="joinBack" class="tote-back">Club Hub</button></div><div class="join-card"><span class="eyebrow dark">PLAYER APPLICATION</span><h2>Interested in joining Afon Valley?</h2><p>Send us your details and the club will get back to you. This is an application, not an automatic squad place.</p><form id="joinForm" class="form"><label>Full name<input name="name" autocomplete="name" required maxlength="100"></label><div class="form-grid"><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Mobile<input name="mobile" inputmode="tel" autocomplete="tel"></label><label>Preferred position<input name="position" placeholder="e.g. CM, CB, GK"></label></div><label>Football experience<textarea name="experience" maxlength="1000" placeholder="Tell us briefly where you have played before, if anywhere."></textarea></label><label>Anything else we should know?<textarea name="notes" maxlength="1500"></textarea></label><label class="tote-terms"><input name="age" type="checkbox" required><span>I confirm I am aged 16 or over.</span></label><p class="muted" style="font-size:12px;margin:0">If you are 16 or 17, the club will request parent or guardian details and complete safeguarding checks before registration.</p><button class="btn primary">Send application</button><p id="joinMsg" class="msg"></p></form></div></div></section>
@@ -340,6 +352,7 @@ async function fines(){
     sb.from('fines').select('*,players(name)').order('issued_date',{ascending:false}).order('id',{ascending:false})
   ]);
   if(error)return $('#content').innerHTML='<div class="panel empty">'+esc(error.message)+'</div>';
+  const canEditFines=!isPlayerView()&&!!profile?.approved&&['chair','fines'].includes(profile?.role);
   const finesData=fs||[],monthType=/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b.*\bfines?\b/i,
   types=[...new Set(finesData.map(x=>x.fine_type).filter(t=>t&&!monthType.test(String(t))&&!/imported total/i.test(String(t))))].sort((a,b)=>a.localeCompare(b)),
   fineMonth=v=>{if(!v)return '';const x=new Date(String(v).slice(0,10)+'T12:00:00');return Number.isNaN(x.getTime())?'':x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')},
@@ -370,10 +383,78 @@ async function fines(){
   const draw=()=>{
     const rows=filteredRows(),gross=rows.reduce((a,x)=>a+Number(x.amount_pence||0),0),paid=rows.reduce((a,x)=>a+Math.min(Number(x.amount_pence||0),Number(x.paid_pence||0)),0),outstanding=rows.reduce((a,x)=>a+Math.max(0,Number(x.amount_pence)-Number(x.paid_pence||0)),0),overdue=rows.filter(x=>statusOf(x)==='overdue').reduce((a,x)=>a+Math.max(0,Number(x.amount_pence)-Number(x.paid_pence||0)),0);
     $('#fineTotals').innerHTML='<div class="fine-summary"><div><span>FILTERED TOTAL</span><strong>'+cash(gross)+'</strong></div><div><span>PAID</span><strong>'+cash(paid)+'</strong></div><div><span>OUTSTANDING</span><strong>'+cash(outstanding)+'</strong></div><div><span>OVERDUE</span><strong>'+cash(overdue)+'</strong></div></div>';
-    $('#fineResults').innerHTML=rows.length?'<div class="fine-list">'+rows.map(f=>{const s=statusOf(f),rem=Math.max(0,Number(f.amount_pence)-Number(f.paid_pence||0));return '<div class="fine-card"><div class="fine-main"><div><strong>'+esc(f.players?.name||'Player')+'</strong><span>'+esc(f.fine_type)+'</span><small>Issued '+day(f.issued_date)+'</small></div><div class="fine-money"><strong>'+cash(f.amount_pence)+'</strong><span class="badge '+badgeOf(s)+'">'+labelOf(s)+'</span></div></div><div class="fine-progress"><span>Paid '+cash(f.paid_pence||0)+'</span><span>Remaining '+cash(rem)+'</span></div><div class="fine-actions"><label>Due date<input type="date" data-fine-due="'+f.id+'" value="'+esc(f.due_date||'')+'"></label><button class="btn mini-action" data-save-fine-due="'+f.id+'">Save date</button>'+(rem>0?'<button class="btn mini-action" data-remind-fine="'+f.id+'" data-remind-player="'+f.player_id+'" data-remind-name="'+esc(f.players?.name||'player')+'">Remind</button>':'')+'</div></div>'}).join('')+'</div>':'<div class="empty">No fines match these filters.</div>';
+    $('#fineResults').innerHTML=rows.length?'<div class="fine-list">'+rows.map(f=>{const s=statusOf(f),rem=Math.max(0,Number(f.amount_pence)-Number(f.paid_pence||0));return '<div class="fine-card"><div class="fine-main"><div><strong>'+esc(f.players?.name||'Player')+'</strong><span>'+esc(f.fine_type)+'</span><small>Issued '+day(f.issued_date)+'</small></div><div class="fine-money"><strong>'+cash(f.amount_pence)+'</strong><span class="badge '+badgeOf(s)+'">'+labelOf(s)+'</span></div></div><div class="fine-progress"><span>Paid '+cash(f.paid_pence||0)+'</span><span>Remaining '+cash(rem)+'</span></div><div class="fine-actions"><label>Due date<input type="date" data-fine-due="'+f.id+'" value="'+esc(f.due_date||'')+'"></label><button class="btn mini-action" data-save-fine-due="'+f.id+'">Save date</button>'+(canEditFines?'<button class="btn mini-action fine-edit-trigger" type="button" data-edit-fine="'+f.id+'">Edit fine</button>':'')+(rem>0?'<button class="btn mini-action" data-remind-fine="'+f.id+'" data-remind-player="'+f.player_id+'" data-remind-name="'+esc(f.players?.name||'player')+'">Remind</button>':'')+'</div><div class="fine-edit-slot" data-fine-editor="'+f.id+'"></div></div>'}).join('')+'</div>':'<div class="empty">No fines match these filters.</div>';
     $('#remindFilteredFines').disabled=!rows.some(x=>Math.max(0,Number(x.amount_pence)-Number(x.paid_pence||0))>0);
 
-    $('#fineResults').querySelectorAll('[data-save-fine-due]').forEach(b=>b.onclick=async()=>{const id=Number(b.dataset.saveFineDue),input=$('[data-fine-due="'+id+'"]'),{error}=await sb.from('fines').update({due_date:input.value||null,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);b.textContent='Saved';setTimeout(()=>{b.textContent='Save date';draw()},500)});
+    $('#fineResults').querySelectorAll('[data-save-fine-due]').forEach(b=>b.onclick=async()=>{
+      const id=Number(b.dataset.saveFineDue),fine=finesData.find(x=>Number(x.id)===id),input=$('[data-fine-due="'+id+'"]');
+      if(!fine||!input||!canEditFines)return;
+      b.disabled=true;b.textContent='Saving…';
+      const {error}=await sb.rpc('edit_fine_details',{
+        p_fine_id:id,p_player_id:fine.player_id,p_amount_pence:fine.amount_pence,
+        p_fine_type:fine.fine_type,p_issued_date:String(fine.issued_date).slice(0,10),
+        p_due_date:input.value||null
+      });
+      if(error){b.disabled=false;b.textContent='Save date';return alert(error.message)}
+      await fines();
+    });
+    $('#fineResults').querySelectorAll('[data-edit-fine]').forEach(b=>b.onclick=()=>{
+      if(!canEditFines)return;
+      const id=Number(b.dataset.editFine),fine=finesData.find(x=>Number(x.id)===id);
+      const slot=$('[data-fine-editor="'+id+'"]');
+      if(!fine||!slot)return;
+      if(slot.innerHTML.trim()){slot.innerHTML='';return}
+      $('#fineResults').querySelectorAll('[data-fine-editor]').forEach(x=>x.innerHTML='');
+      const options=ps.some(p=>Number(p.id)===Number(fine.player_id))?ps:
+        [{id:fine.player_id,name:fine.players?.name||'Current player'},...ps];
+      const hasPaid=Number(fine.paid_pence||0)>0;
+      slot.innerHTML='<form class="fine-edit-form" data-fine-edit-form="'+id+'">'+
+        '<h4>Edit fine</h4>'+
+        '<div class="fine-edit-fields">'+
+          '<label>Player<select name="player" '+(hasPaid?'disabled':'')+'>'+
+            options.map(p=>'<option value="'+Number(p.id)+'" '+(Number(p.id)===Number(fine.player_id)?'selected':'')+'>'+esc(p.name)+'</option>').join('')+
+          '</select></label>'+
+          '<label>Fine amount (£)<input type="number" name="amount" min="0.01" step="0.01" inputmode="decimal" value="'+(Number(fine.amount_pence)/100).toFixed(2)+'" required></label>'+
+          '<label>Reason<input name="reason" maxlength="150" list="fineTypeSuggestions" value="'+esc(fine.fine_type)+'" required></label>'+
+          '<label>Date issued<input name="issued" type="date" value="'+esc(String(fine.issued_date||'').slice(0,10))+'" required></label>'+
+          '<label>Due date (optional)<input name="due" type="date" value="'+esc(String(fine.due_date||'').slice(0,10))+'"></label>'+
+        '</div>'+
+        '<p class="muted fine-edit-help">'+(hasPaid?'This fine has '+cash(fine.paid_pence)+' allocated to it. You cannot move it to another player or reduce it below that paid amount.':'Changing the player will also move the linked charge on the Money screen.')+'<br>Payment records stay untouched, and each correction is logged.</p>'+
+        '<p class="msg fine-edit-error" role="alert" aria-live="polite"></p>'+
+        '<div class="actions"><button class="btn primary" type="submit">Save changes</button><button class="btn" type="button" data-fine-edit-cancel>Cancel</button></div>'+
+      '</form>';
+      slot.querySelector('[data-fine-edit-cancel]').onclick=()=>{slot.innerHTML=''};
+      const form=slot.querySelector('form');
+      form.onsubmit=async ev=>{
+        ev.preventDefault();
+        const fd=new FormData(form);
+        const rawAmount=String(fd.get('amount')||'').trim(),amountPence=Math.round(Number(rawAmount)*100);
+        const reason=String(fd.get('reason')||'').trim(),issued=String(fd.get('issued')||''),due=String(fd.get('due')||'');
+        const playerId=hasPaid?Number(fine.player_id):Number(fd.get('player'));
+        const msg=form.querySelector('.fine-edit-error');
+        msg.textContent='';
+        if(!/^\\d+(?:\\.\\d{1,2})?$/.test(rawAmount)||!Number.isSafeInteger(amountPence)||amountPence<=0){
+          msg.textContent='Enter a valid amount with no more than two decimal places.';return;
+        }
+        if(!reason||reason.length<2||reason.length>150||monthType.test(reason)||/imported total/i.test(reason)){
+          msg.textContent='Enter a specific fine reason (2–150 characters).';return;
+        }
+        if(!issued||!Number.isInteger(playerId)||playerId<=0){
+          msg.textContent='Choose a player and issue date.';return;
+        }
+        if(amountPence<Number(fine.paid_pence||0)){msg.textContent='The amount cannot be reduced below the amount already paid.';return}
+        if((playerId!==Number(fine.player_id)||amountPence!==Number(fine.amount_pence))&&
+          !confirm('Save this fine correction? The linked charge on the Money screen will update too; previous payment records will not change.'))return;
+        const save=form.querySelector('[type="submit"]');
+        save.disabled=true;save.textContent='Saving…';
+        const {error}=await sb.rpc('edit_fine_details',{
+          p_fine_id:id,p_player_id:playerId,p_amount_pence:amountPence,
+          p_fine_type:reason,p_issued_date:issued,p_due_date:due||null
+        });
+        if(error){msg.textContent=error.message;save.disabled=false;save.textContent='Save changes';return}
+        await fines();
+      };
+    });
     $('#fineResults').querySelectorAll('[data-remind-fine]').forEach(b=>b.onclick=async()=>{const fine=finesData.find(x=>x.id===Number(b.dataset.remindFine));if(!fine)return;const rem=Math.max(0,Number(fine.amount_pence)-Number(fine.paid_pence||0));b.disabled=true;b.textContent='Sending…';const due=fine.due_date?' Due '+day(fine.due_date)+'.':'';const {error}=await sb.functions.invoke('send-club-notification',{body:{type:'fine',title:'Outstanding club fine',body:'You have '+cash(rem)+' remaining for '+fine.fine_type+'.'+due,player_ids:[fine.player_id],url:'./'}});if(error){b.disabled=false;b.textContent='Remind';return alert(error.message)}b.textContent='Sent';setTimeout(()=>{b.disabled=false;b.textContent='Remind'},900)});
   };
 
@@ -1519,12 +1600,12 @@ async function tote(){
 async function admin(){const yr=new Date().getFullYear(),may=new Date().getMonth()===4;const [{data:us},{data:ps},{data:settings},{data:authStatus},{data:annual}]=await Promise.all([sb.from('profiles').select('*').order('created_at'),sb.from('players').select('id,name,user_id,status').order('name'),sb.from('club_settings').select('*').eq('id',1).single(),sb.rpc('admin_account_auth_status'),may?sb.from('player_annual_checks').select('player_id,confirmed_at').eq('check_year',yr):Promise.resolve({data:[]})]);if(tab!=='admin'||!profile?.approved||profile.role!=='chair'||isPlayerView())return;const authMap=new Map((authStatus||[]).map(x=>[x.user_id,!!x.email_confirmed])),annualMap=new Map((annual||[]).map(x=>[Number(x.player_id),x.confirmed_at])),activePlayers=(ps||[]).filter(p=>p.status==='active');$('#content').innerHTML='<div class="panel"><div class="head"><div><span class="eyebrow dark">CHAIR ONLY</span><h3>Accounts</h3></div></div><p class="muted">Approve a login, choose their role and link them to a player if needed. Permissions are applied automatically from the role.</p><div class="table"><table><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Approved</th><th>Player link</th><th></th></tr></thead><tbody>'+(us||[]).map(u=>'<tr><td><strong>'+esc(u.display_name)+'</strong><br><small>'+esc(u.email||'')+'</small></td><td>'+(authMap.get(u.id)?'<span class="badge ok">Confirmed</span>':'<div class="email-confirm-cell"><span class="badge warn">Not confirmed</span><button class="btn mini-action" data-resend-confirm="'+u.id+'" data-resend-email="'+esc(u.email||'')+'">Resend email</button></div>')+'</td><td><select data-r="'+u.id+'"><option value="player">Player</option><option value="manager">Team Manager</option><option value="treasurer">Treasurer</option><option value="fines">Fines Admin</option><option value="safeguarding">Safeguarding Officer</option><option value="security">Security Officer</option><option value="facilities">Facilities & Ground Officer</option><option value="social">Social Media & Recruitment</option><option value="equipment">Equipment Officer</option><option value="chair">Chair</option></select></td><td><select data-a="'+u.id+'"><option value="false">No</option><option value="true">Yes</option></select></td><td><select data-p="'+u.id+'"><option value="">None</option>'+(ps||[]).map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('')+'</select></td><td><div class="admin-account-actions"><button class="btn primary" data-save="'+u.id+'">Save</button>'+(!u.approved?'<button class="btn mini-action danger" data-delete-pending="'+u.id+'" data-delete-name="'+esc(u.display_name||u.email||'this account')+'">Delete</button>':'')+'</div></td></tr>').join('')+'</tbody></table></div></div>'+(may?'<div class="panel"><div class="head"><div><span class="eyebrow dark">MAY DETAILS CHECK</span><h3>'+annualMap.size+'/'+activePlayers.length+' confirmed</h3></div></div><div class="list">'+activePlayers.map(p=>'<div class="row"><span>'+esc(p.name)+'</span><span class="badge '+(annualMap.has(p.id)?'ok':'warn')+'">'+(annualMap.has(p.id)?'CONFIRMED':'PENDING')+'</span></div>').join('')+'</div></div>':'')+'<div class="panel"><span class="eyebrow dark">CLUB SHOP</span><h3>Shop link</h3><p class="muted">This is only visible here in Chair Admin. Players only see the shop button itself.</p><form id="adminShopForm" class="form"><label>Shop URL<input name="url" type="url" placeholder="https://..." value="'+esc(settings?.shop_url||'')+'"></label><label>Button name<input name="label" value="'+esc(settings?.shop_label||'Club Shop')+'"></label><button class="btn primary">Save shop link</button></form></div>';for(const u of us||[]){$('[data-r="'+u.id+'"]').value=u.role;$('[data-a="'+u.id+'"]').value=String(u.approved);const l=(ps||[]).find(p=>p.user_id===u.id);$('[data-p="'+u.id+'"]').value=l?String(l.id):''}$('#content').querySelectorAll('[data-save]').forEach(b=>b.onclick=async()=>{const id=b.dataset.save,pv=$('[data-p="'+id+'"]').value,{error}=await sb.rpc('admin_set_user',{target_user:id,new_role:$('[data-r="'+id+'"]').value,is_approved:$('[data-a="'+id+'"]').value==='true',link_player_id:pv?Number(pv):null});error?alert(error.message):admin()});$('#content').querySelectorAll('[data-resend-confirm]').forEach(b=>b.onclick=async()=>{const email=b.dataset.resendEmail;if(!email)return alert('This account has no email address.');if(!confirm('Send a new confirmation email to '+email+'?'))return;const original=b.textContent;b.disabled=true;b.textContent='Sending…';const {error}=await sb.auth.resend({type:'signup',email,options:{emailRedirectTo:'https://tempcallum.github.io/afon-valley-hub/'}});b.disabled=false;b.textContent=original;if(error)alert(error.message);else alert('Confirmation email sent to '+email+'.')});$('#content').querySelectorAll('[data-delete-pending]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deletePending,name=b.dataset.deleteName;if(!confirm('Permanently delete the pending signup for '+name+'? This cannot be undone.'))return;b.disabled=true;b.textContent='Deleting…';const {error}=await sb.rpc('delete_pending_account',{target_user:id});if(error){b.disabled=false;b.textContent='Delete';alert(error.message)}else admin()});$('#adminShopForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),u=String(f.get('url')||'').trim();if(u&&!/^https?:\/\//i.test(u))return alert('The shop link needs to start with http:// or https://');const {error}=await sb.from('club_settings').update({shop_url:u||null,shop_label:String(f.get('label')||'Club Shop').trim()||'Club Shop',updated_at:new Date().toISOString(),updated_by:user.id}).eq('id',1);error?alert(error.message):alert('Club shop link saved')};await renderAdminExtras()}
 if('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    const k='avfc-sw-refresh-v46';
+    const k='avfc-sw-refresh-v47';
     if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload()}
   });
   window.addEventListener('load',async()=>{
     try{
-      const reg=await navigator.serviceWorker.register('./service-worker.js?v=46',{updateViaCache:'none'});
+      const reg=await navigator.serviceWorker.register('./service-worker.js?v=47',{updateViaCache:'none'});
       await reg.update();
     }catch{}
   });
