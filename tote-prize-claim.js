@@ -22,14 +22,50 @@ async function avfcShowPrizeClaim(){
   $('#totePublic').classList.remove('hidden');
   $('#toteBack').onclick=()=>{location.href=location.pathname};
   const wrap=$('#totePublicContent');
-  const hash=new URLSearchParams(location.hash.replace(/^#/,''));
+  // Retain the original claim fragment in memory, even if another script rewrites the URL.
+  const claimFragment=String(window.__avfcPrizeClaimFragment||location.hash||'');
+  window.__avfcPrizeClaimFragment='';
+  const hash=new URLSearchParams(claimFragment.replace(/^#/,''));
   const payoutId=hash.get('payout')||'';
   const token=hash.get('token')||'';
   // Private winner tokens should not remain in the visible URL/history after use.
   history.replaceState(null,'',location.pathname+'?tote=claim');
   wrap.innerHTML='<div class="tote-public-card avfc-prize-card"><span class="eyebrow dark">AFON VALLEY FC TOTE</span><h2>Claim your prize</h2><p>Checking your private winning email link…</p></div>';
   if(!payoutId||!token){
-    wrap.innerHTML='<div class="tote-public-card avfc-prize-card"><h2>Open your winning email</h2><p>To claim a Tote prize, use the private link in the email sent to the winning ticket holder. This link is unique to each prize.</p><p>If you cannot find it, contact <a href="mailto:afonvalleyafc@gmail.com">afonvalleyafc@gmail.com</a>.</p></div>';
+    wrap.innerHTML='<div class="tote-public-card avfc-prize-card">'+
+      '<h2>Open your winning link</h2>'+
+      '<p>The private part of the email link did not reach this page. Your prize is still safe.</p>'+
+      '<p><strong>On iPhone:</strong> return to the winning email, press and hold the blue claim link, select <strong>Copy Link</strong>, then paste it below.</p>'+
+      '<form id="avfcPrizePasteForm" class="form" autocomplete="off">'+
+        '<label>Paste your full private winning link<input id="avfcPrizePastedLink" type="url" inputmode="url" placeholder="https://tempcallum.github.io/..." required autocomplete="off" autocorrect="off" spellcheck="false"></label>'+
+        '<button type="submit" class="btn primary">Open my prize claim</button>'+
+        '<p id="avfcPrizePasteError" class="msg" role="alert" aria-live="polite"></p>'+
+      '</form>'+
+      '<p class="muted">Keep this private link and your bank details confidential. If you need help, contact <a href="mailto:afonvalleyafc@gmail.com">afonvalleyafc@gmail.com</a>.</p>'+
+    '</div>';
+    const form=wrap.querySelector('#avfcPrizePasteForm');
+    form.onsubmit=event=>{
+      event.preventDefault();
+      const pasted=String(form.querySelector('#avfcPrizePastedLink').value||'').trim();
+      const error=form.querySelector('#avfcPrizePasteError');
+      error.textContent='';
+      let url;
+      try{url=new URL(pasted)}catch{error.textContent='Paste the full winning link from the email.';return}
+      const expectedPath=location.pathname;
+      if(url.origin!==location.origin||
+         (url.pathname!==expectedPath&&url.pathname!==expectedPath+'index.html')||
+         url.searchParams.get('tote')!=='claim'){
+        error.textContent='That is not an Afon Valley Tote winning link. Use Copy Link in your original email.';return;
+      }
+      const pastedParams=new URLSearchParams(url.hash.replace(/^#/,''));
+      if(!/^[a-f0-9-]{36}$/i.test(pastedParams.get('payout')||'')||
+         !/^[a-f0-9]{64}$/i.test(pastedParams.get('token')||'')){
+        error.textContent='The pasted link is incomplete. Copy the entire blue link in the winning email.';return;
+      }
+      form.querySelector('#avfcPrizePastedLink').value='';
+      window.__avfcPrizeClaimFragment=url.hash;
+      avfcShowPrizeClaim();
+    };
     return;
   }
   let prize;
