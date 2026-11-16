@@ -188,27 +188,58 @@ async function enter(u){user=u;const {data:p}=await sb.from('profiles').select('
 // This view is not published to other roles and does not modify live club records.
 labels['team-development']='Team Management';
 async function teamDevelopment(){
-  if(profile?.role!=='chair'||isPlayerView()){tab='home';drawNav();return home()}
+  if(profile?.role!=='chair'||!profile?.approved||isPlayerView()){tab='home';drawNav();return home()}
   const content=$('#content');
-  const panel=(title,body)=>'<section class="panel"><h3>'+title+'</h3>'+body+'</section>';
-  content.innerHTML=panel('Team Management — Development Preview','<p>This area is visible only in Chairman mode. Existing team members continue using their current Hub.</p>');
-  const [teams,budgets,transfers]=await Promise.all([
-    sb.from('club_teams').select('id,name,status').order('id'),
-    sb.from('club_budget_accounts').select('id,team_id,season,account_type,opening_pence').order('id'),
-    sb.from('club_budget_transfers').select('id,from_account_id,to_account_id,amount_pence,reason,created_at').order('created_at',{ascending:false}).limit(20)
+  content.innerHTML='<div class="panel empty">Loading club teams and matchday HQ…</div>';
+  const results=await Promise.all([
+    sb.from('club_teams').select('*').order('id'),
+    sb.from('club_team_memberships').select('team_id,player_id,status'),
+    sb.from('players').select('id,name,status').order('name'),
+    sb.from('club_team_staff').select('team_id,user_id,staff_role'),
+    sb.from('profiles').select('id,display_name,role,approved').eq('approved',true).order('display_name'),
+    sb.from('club_team_fixtures').select('*').order('match_date'),
+    sb.from('matches').select('id,match_date,opponent,home_away,venue,home_goals,away_goals').order('match_date'),
+    sb.from('club_budget_accounts').select('*'),
+    sb.from('club_budget_transfers').select('*').order('created_at',{ascending:false}).limit(20)
   ]);
-  if(teams.error||budgets.error||transfers.error){
-    content.innerHTML+=panel('First Team','<p>Existing team · Active</p>')+panel('Reserves','<p>Future team · Draft (example only)</p>')+panel('Women\'s Team','<p>Future team · Draft (example only)</p>')+panel('Club budgets','<p>Central reserve and separate team allocations will appear here once finance setup is verified. No actual financial balances have been entered.</p>')+panel('Preview status','<p>This is a Chairman-only design preview. No teams, memberships or financial transactions have been changed.</p>');
+  if(results.some(x=>x.error)){
+    content.innerHTML='<div class="panel"><h3>Team Management unavailable</h3><p>'+esc(results.filter(x=>x.error).map(x=>x.error.message).join('; '))+'</p></div>';
     return;
   }
-  const teamNames=new Map((teams.data||[]).map(t=>[t.id,t.name]));
-  content.innerHTML+=panel('Club Teams','<div class="grid two">'+(teams.data||[]).map(t=>'<div class="card"><strong>'+esc(t.name)+'</strong><p>'+esc(t.status)+'</p></div>').join('')+'</div>');
-  const accounts=budgets.data||[],moves=transfers.data||[];
-  content.innerHTML+=panel('Budget Accounts','<p>Internal allocations, not bank balances. No money moves from this preview.</p><div class="grid two">'+accounts.map(a=>{
-    const movement=moves.reduce((n,m)=>n+(m.to_account_id===a.id?Number(m.amount_pence):0)-(m.from_account_id===a.id?Number(m.amount_pence):0),0);
-    return '<div class="card"><strong>'+esc(a.account_type==='club_reserve'?'Club Reserve':teamNames.get(a.team_id)||'Team')+'</strong><p>'+cash(Number(a.opening_pence)+movement)+'</p><small>'+esc(a.season)+'</small></div>';
-  }).join('')+'</div>');
-  content.innerHTML+=panel('Recent Budget Transfers','<p>'+ (moves.length?moves.map(m=>esc(m.reason)+' — '+cash(m.amount_pence)).join('<br>'):'No transfers recorded')+'</p>');
+  const [teams,members,players,staff,users,fixtures,firstFixtures,budgets,transfers]=results.map(x=>x.data||[]);
+  const byId=new Map(teams.map(t=>[t.id,t.name]));
+  const first=teams.find(t=>t.name==='First Team');
+  const upcoming=[...firstFixtures.map(f=>({...f,team_id:first?.id,source:'first'})),...fixtures.map(f=>({...f,source:'team'}))].filter(f=>new Date(f.match_date).getTime()>Date.now()-10800000).sort((a,b)=>new Date(a.match_date)-new Date(b.match_date));
+  const panel=(title,body)=>'<section class="panel"><h3>'+title+'</h3>'+body+'</section>';
+  const options=(items,label,value)=>items.map(x=>'<option value="'+esc(value(x))+'">'+esc(label(x))+'</option>').join('');
+  const teamOptions=options(teams,t=>t.name,t=>t.id);
+  const playerOptions=options(players.filter(p=>p.status==='active'),p=>p.name,p=>p.id);
+  const userOptions=options(users,u=>u.display_name+' ('+u.role+')',u=>u.id);
+  const formatDate=v=>new Date(v).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'});
+  content.innerHTML=panel('Club Management · Chairman','<p>Chairman-only development area. Other members cannot access these unpublished teams, fixtures or assignments.</p>')+
+  panel('Matchday HQ · All Teams','<p>Upcoming fixtures across Afon Valley. First Team fixtures are read from the existing Hub; other teams are managed below.</p>'+
+    (upcoming.length?upcoming.slice(0,16).map(f=>'<div class="row"><div><strong>'+esc(byId.get(f.team_id)||'First Team')+'</strong><div>'+esc(f.opponent)+' · '+esc(f.home_away||'')+'</div><small>'+esc(formatDate(f.match_date))+' · '+esc(f.venue||'Venue TBC')+'</small></div><span class="badge">'+(f.source==='first'?'Existing fixture':'Draft fixture')+'</span></div>').join(''):'<p>No upcoming fixtures recorded.</p>'))+
+  panel('Teams','<div class="list">'+teams.map(t=>'<div class="row"><div><strong>'+esc(t.name)+'</strong><div>'+esc(t.status)+' · '+members.filter(m=>m.team_id===t.id&&m.status==='active').length+' players · '+staff.filter(x=>x.team_id===t.id).length+' staff</div></div><button class="btn" data-team-status="'+t.id+'">'+(t.status==='draft'?'Activate':'Set draft')+'</button></div>').join('')+'</div>'+
+    '<form id="teamCreate" class="form"><label>New team name<input name="name" maxlength="80" required placeholder="e.g. Reserves"></label><button class="btn primary">Create draft team</button></form>')+
+  panel('Player Team Assignments','<p>One player record and one club account, even when playing for more than one team.</p><form id="teamAssign" class="form-grid"><label>Team<select name="team_id">'+teamOptions+'</select></label><label>Player<select name="player_id">'+playerOptions+'</select></label><button class="btn primary">Assign player</button></form>'+
+    '<div class="list">'+members.filter(m=>m.status==='active').map(m=>'<div class="row"><span>'+esc(players.find(p=>p.id===m.player_id)?.name||'Player')+' · '+esc(byId.get(m.team_id)||'Team')+'</span><button class="btn" data-remove-player="'+m.team_id+':'+m.player_id+'">Remove</button></div>').join('')+'</div>')+
+  panel('Team Staff','<form id="teamStaff" class="form-grid"><label>Team<select name="team_id">'+teamOptions+'</select></label><label>Member<select name="user_id">'+userOptions+'</select></label><label>Position<select name="staff_role"><option value="manager">Manager</option><option value="coach">Coach</option><option value="assistant">Assistant</option></select></label><button class="btn primary">Assign staff</button></form>'+
+    '<div class="list">'+staff.map(x=>'<div class="row"><span>'+esc(byId.get(x.team_id)||'Team')+' · '+esc(users.find(u=>u.id===x.user_id)?.display_name||'Member')+' ('+esc(x.staff_role)+')</span><button class="btn" data-remove-staff="'+x.team_id+':'+x.user_id+':'+x.staff_role+'">Remove</button></div>').join('')+'</div>')+
+  panel('Other Team Fixtures','<p>These fixtures are private to the Chairman preview. First Team fixtures continue to be managed in the existing Fixtures screen.</p><form id="teamFixture" class="form-grid"><label>Team<select name="team_id">'+options(teams.filter(t=>t.name!=='First Team'),t=>t.name,t=>t.id)+'</select></label><label>Opponent<input name="opponent" required maxlength="120"></label><label>Kick-off<input type="datetime-local" name="match_date" required></label><label>Home / Away<select name="home_away"><option>Home</option><option>Away</option><option>Neutral</option></select></label><label>Venue<input name="venue" maxlength="180"></label><button class="btn primary" '+(teams.length<2?'disabled':'')+'>Add fixture</button></form>'+
+    '<div class="list">'+fixtures.map(f=>'<div class="row"><span>'+esc(byId.get(f.team_id)||'Team')+' · '+esc(f.opponent)+' · '+esc(formatDate(f.match_date))+'</span><button class="btn" data-remove-fixture="'+f.id+'">Delete</button></div>').join('')+'</div>')+
+  panel('Club and Team Budgets','<p>Internal allocation accounts only; these are not club bank balances. Transfers remain disabled until reconciliation and authorisation tests are complete.</p>'+
+    (budgets.length?budgets.map(b=>'<div class="row"><span>'+esc(b.account_type==='club_reserve'?'Club reserve':byId.get(b.team_id)||'Team')+' · '+esc(b.season)+'</span><strong>'+cash(b.opening_pence)+'</strong></div>').join(''):'<p>No allocations have been entered. Existing finances are unchanged.</p>')+
+    '<p>'+transfers.length+' recorded internal transfers.</p>');
+  const save=async(task,success='Saved')=>{try{const {error}=await task();if(error)throw error;alert(success);await teamDevelopment()}catch(e){alert('Could not save: '+e.message)}};
+  const formData=id=>Object.fromEntries(new FormData($('#'+id)).entries());
+  $('#teamCreate').onsubmit=e=>{e.preventDefault();const d=formData('teamCreate');save(()=>sb.from('club_teams').insert({name:d.name.trim(),status:'draft',created_by:user.id}),'Draft team created')};
+  $('#teamAssign').onsubmit=e=>{e.preventDefault();const d=formData('teamAssign');save(()=>sb.from('club_team_memberships').upsert({team_id:Number(d.team_id),player_id:Number(d.player_id),status:'active'},{onConflict:'team_id,player_id'}),'Player assigned')};
+  $('#teamStaff').onsubmit=e=>{e.preventDefault();const d=formData('teamStaff');save(()=>sb.from('club_team_staff').upsert({team_id:Number(d.team_id),user_id:d.user_id,staff_role:d.staff_role},{onConflict:'team_id,user_id,staff_role'}),'Staff assigned')};
+  $('#teamFixture').onsubmit=e=>{e.preventDefault();const d=formData('teamFixture');if(!d.team_id)return alert('Create another team first.');save(()=>sb.from('club_team_fixtures').insert({team_id:Number(d.team_id),opponent:d.opponent.trim(),match_date:new Date(d.match_date).toISOString(),home_away:d.home_away,venue:d.venue.trim(),created_by:user.id}),'Fixture created')};
+  content.querySelectorAll('[data-team-status]').forEach(b=>b.onclick=()=>{const t=teams.find(x=>x.id===Number(b.dataset.teamStatus));if(t?.name==='First Team')return alert('First Team must remain active during migration.');save(()=>sb.from('club_teams').update({status:t.status==='draft'?'active':'draft'}).eq('id',t.id))});
+  content.querySelectorAll('[data-remove-player]').forEach(b=>b.onclick=()=>{const [tid,pid]=b.dataset.removePlayer.split(':').map(Number);if(tid===first?.id)return alert('First Team memberships are protected during migration.');if(confirm('Remove this player from this team?'))save(()=>sb.from('club_team_memberships').delete().eq('team_id',tid).eq('player_id',pid))});
+  content.querySelectorAll('[data-remove-staff]').forEach(b=>b.onclick=()=>{const [tid,uid,role]=b.dataset.removeStaff.split(':');if(confirm('Remove staff assignment?'))save(()=>sb.from('club_team_staff').delete().eq('team_id',Number(tid)).eq('user_id',uid).eq('staff_role',role))});
+  content.querySelectorAll('[data-remove-fixture]').forEach(b=>b.onclick=()=>{if(confirm('Delete this draft team fixture?'))save(()=>sb.from('club_team_fixtures').delete().eq('id',Number(b.dataset.removeFixture)))});
 }
 
 function allowed(){const base=isPlayerView()?tabs.player:(tabs[profile?.role]||['home']);const ordered=base.filter(t=>t!=='shop');if(profile?.role==='chair'&&!isPlayerView())ordered.push('team-development');if(base.includes('shop'))ordered.splice(Math.min(3,ordered.length),0,'shop');if(!ordered.includes('calendar'))ordered.push('calendar');return ordered}function drawNav(){if(!allowed().includes(tab))tab='home';$('#nav').innerHTML=allowed().map(t=>'<button data-t="'+t+'" class="'+(t===tab?'active':'')+'">'+labels[t]+'</button>').join('');$('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;drawNav();render(tab)})}
