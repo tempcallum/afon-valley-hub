@@ -198,7 +198,7 @@ async function teamDevelopment(){
     sb.from('club_budget_transfers').select('id,from_account_id,to_account_id,amount_pence,reason,created_at').order('created_at',{ascending:false}).limit(20)
   ]);
   if(teams.error||budgets.error||transfers.error){
-    content.innerHTML+=panel('Setup pending','<p>The multi-team database is not yet enabled. This preview will display real records once the reviewed migration is applied.</p>');
+    content.innerHTML+=panel('First Team','<p>Existing team · Active</p>')+panel('Reserves','<p>Future team · Draft (example only)</p>')+panel('Women\'s Team','<p>Future team · Draft (example only)</p>')+panel('Club budgets','<p>Central reserve and separate team allocations will appear here once finance setup is verified. No actual financial balances have been entered.</p>')+panel('Preview status','<p>This is a Chairman-only design preview. No teams, memberships or financial transactions have been changed.</p>');
     return;
   }
   const teamNames=new Map((teams.data||[]).map(t=>[t.id,t.name]));
