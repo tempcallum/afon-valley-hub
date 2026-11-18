@@ -21,7 +21,7 @@ function avfcCompactGroups(){
    {id:'club',label:'Club',tabs:player?['events','tote','kit','shop','committee','policies']:['events','kit','shop','committee','policies']},
    {id:'money',label:'Money',tabs:player?['money','fines']:['money','fines','tote']},
    ...(player?[{id:'account',label:'Account',tabs:['account','details','emergency','calendar']}]:
-     [{id:'manage',label:'Manage',tabs:['admin','documents','equipment','emergency','calendar','account','details']}])
+     [{id:'manage',label:'Manage',tabs:['admin','team-development','documents','equipment','emergency','calendar','account','details']}])
  ];
  return source.map(g=>({...g,tabs:g.tabs.filter(x=>items.has(x))})).filter(g=>g.tabs.length);
 }
