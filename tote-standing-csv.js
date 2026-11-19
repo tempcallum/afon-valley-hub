@@ -110,7 +110,7 @@
          const {form}=entry.sub;
          form.closest('details')?.setAttribute('open','');
          form.querySelector('[name=reference]').value=entry.ref;
-         form.querySelector('[name=transaction]').value=entry.key;
+         // Keep the Hub-generated reconciliation reference; the CSV identifier is not required.
          if(entry.credit!==null)form.querySelector('[name=amount]').value=(entry.credit/100).toFixed(2);
          const time=form.querySelector('[name=received]');
          time.value='';time.focus();
