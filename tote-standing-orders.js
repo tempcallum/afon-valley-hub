@@ -265,7 +265,7 @@
              '<label>Amount received (£)<input name="amount" inputmode="decimal" value="'+(Number(s.amount_pence)/100).toFixed(2)+'" required></label>'+
              '<label>Bank reference seen<input name="reference" value="'+safe(s.bank_reference)+'" required></label>'+
              '<label>Actual Lloyds receipt date and time<input name="received" type="datetime-local" required></label>'+
-             '<label>Unique bank transaction ID / statement line<input name="transaction" placeholder="Statement row or payment identifier" maxlength="130" required></label>'+
+             '<label>Hub reconciliation reference (generated automatically)<input name="transaction" value="'+safe('AVFC-'+s.id.replace(/-/g,'').toUpperCase()+'-D'+open.draw_number)+'" readonly required></label>'+
              '</div><button type="submit" class="btn primary">Verify and issue '+Number(s.ticket_count)+' tickets</button></form>')+
            (profile.role==='chair'&&s.status==='active'?'<p><button type="button" class="btn" data-standing-cancel="'+safe(s.id)+'">Stop this subscriber</button></p>':'')+
          '</div></details>';
@@ -290,11 +290,11 @@
      if(!Number.isFinite(amount)||amount<=0||Math.round(amount*100)!==sub.amount_pence)return alert('The amount differs from the subscriber’s expected weekly payment. Do not issue tickets until it is resolved.');
      if(norm(ref)!==norm(sub.bank_reference))return alert('Reference mismatch. Check the Lloyds bank entry.');
      if(!stamp||Number.isNaN(Date.parse(stamp)))return alert('Enter the actual Lloyds receipt time.');
-     if(transaction.length<6)return alert('Use a unique bank statement transaction identifier of at least six characters.');
+     if(transaction.length<6)return alert('Unable to generate a reconciliation reference.');
      const when=new Date(stamp).toISOString();
      if(!confirm('Confirm a REAL cleared Lloyds payment (not an expected payment)?\n\n'+sub.buyer_name+
        '\nAmount: '+gbp(sub.amount_pence)+'\nBank reference: '+ref+
-       '\nReceived: '+dateText(when)+'\nTransaction: '+transaction+
+       '\nReceived: '+dateText(when)+'\nHub reconciliation reference: '+transaction+
        '\nDraw: '+open.draw_number+'\nIssue: '+sub.ticket_count+' tickets'))return;
      const button=form.querySelector('[type=submit]');button.disabled=true;button.textContent='Confirming…';
      try{
