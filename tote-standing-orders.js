@@ -280,6 +280,23 @@
        '<details class="tote-standing-history"><summary>Cancelled standing orders ('+cancelledSubs.length+')</summary>'+
          '<div class="tote-standing-history-inner"><p class="muted">Retained for financial records. Cancelled subscriptions cannot receive new draw entries.</p>'+
          '<div class="list">'+cancelledSubs.map(renderStandingSubscriber).join('')+'</div></div></details>':'');
+   // Drafts are device-local and scoped to the signed-in officer and draw.
+   const draftPrefix='avfc-tote-receipt-draft:'+String(user?.id||'unknown')+':'+String(open?.id||'none')+':';
+   list.querySelectorAll('form.standing-confirm').forEach(form=>{
+     const key=draftPrefix+form.dataset.standingId;
+     const save=()=>{
+       const values={amount:form.elements.amount.value,reference:form.elements.reference.value,received:form.elements.received.value};
+       try{localStorage.setItem(key,JSON.stringify(values))}catch(_){}
+     };
+     try{
+       const saved=JSON.parse(localStorage.getItem(key)||'null');
+       if(saved&&typeof saved==='object'){
+         for(const name of ['amount','reference','received'])if(typeof saved[name]==='string'&&form.elements[name])form.elements[name].value=saved[name];
+       }
+     }catch(_){}
+     form.addEventListener('input',save);
+     form.addEventListener('change',save);
+   });
    list.querySelectorAll('form.standing-confirm').forEach(form=>form.onsubmit=async e=>{
      e.preventDefault();
      const id=form.dataset.standingId,sub=subs.find(x=>x.id===id),data=new FormData(form);
@@ -301,6 +318,7 @@
        const out=await api({action:'confirm',subscription_id:id,amount_pence:Math.round(amount*100),
          bank_reference_seen:ref,bank_received_at:when,bank_transaction_key:transaction},
          {Authorization:'Bearer '+await accountToken()});
+       try{localStorage.removeItem(draftPrefix+id)}catch(_){}
        alert('Confirmed! '+sub.ticket_count+' tickets allocated to Draw '+out.draw_number+'. Ticket email queued.');
        await tote();
      }catch(err){button.disabled=false;button.textContent='Verify and issue '+sub.ticket_count+' tickets';alert('No tickets issued: '+err.message)}
