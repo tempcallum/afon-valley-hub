@@ -1623,11 +1623,36 @@ async function tote(){
     folded.className='panel tote-section-disclosure';
     const caption=document.createElement('summary');
     caption.textContent=summaryText;
+    const pending=attentionCounts[heading]||0;
+    if(pending){
+      const marker=document.createElement('span');
+      marker.className='badge '+(heading==='Failures needing attention'?'danger':'warn');
+      marker.textContent=String(pending)+' action'+(pending===1?'':'s');
+      marker.setAttribute('aria-label',pending+' outstanding '+summaryText.toLowerCase());
+      marker.style.marginLeft='8px';
+      caption.appendChild(marker);
+    }
     section.parentNode.insertBefore(folded,section);
     section.classList.remove('panel');
     section.classList.add('tote-section-content');
     folded.appendChild(caption);
     folded.appendChild(section);
+  }
+  // Attention counts are derived from live records, never from whether a section was opened.
+  const attentionCounts={
+    'Winner payments':payouts.filter(p=>p.status==='due').length,
+    'Failures needing attention':alerts.length
+  };
+  const paymentReviewCount=bankChecks.filter(o=>['payment_claimed','review'].includes(o.status)
+    ||(o.status==='expired'&&o.claimed_paid_at)).length;
+  const paymentPanel=[...$('#content').querySelectorAll('.panel h3')]
+    .find(el=>el.textContent.trim()==='Payments waiting for verification');
+  if(paymentPanel&&paymentReviewCount){
+    const marker=document.createElement('span');
+    marker.className='badge warn';
+    marker.textContent=String(paymentReviewCount)+' to check';
+    marker.setAttribute('aria-label',paymentReviewCount+' claimed or flagged bank payments to review');
+    paymentPanel.append(' ',marker);
   }
   // Keep the actionable payment checks visible; collapse optional Tote information.
   for(const [heading,summaryText] of [
