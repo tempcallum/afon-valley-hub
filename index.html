@@ -1629,6 +1629,31 @@ async function tote(){
     folded.appendChild(caption);
     folded.appendChild(section);
   }
+  // Keep the actionable payment checks visible; collapse optional Tote information.
+  for(const [heading,summaryText] of [
+    ['Your referral link & QR','My sales link & QR code'],
+    ['Social / main club link','Club sharing link & QR code'],
+    ['Tote sales','Sales leaderboard'],
+    ['Winner payments','Prize payments'],
+    ['Failures needing attention','System alerts']
+  ]){
+    const headingEl=[...$('#content').querySelectorAll('.panel h3')]
+      .find(el=>el.textContent.trim()===heading);
+    const section=headingEl?.closest('.panel');
+    if(!section)continue;
+    const folded=document.createElement('details');
+    folded.className='panel tote-section-disclosure';
+    const caption=document.createElement('summary');
+    caption.textContent=summaryText;
+    section.parentNode.insertBefore(folded,section);
+    section.classList.remove('panel');
+    section.classList.add('tote-section-content');
+    folded.appendChild(caption);
+    folded.appendChild(section);
+    // Prize payouts and failures are operational priorities when action is needed.
+    if((heading==='Winner payments'&&payouts.some(p=>p.status==='due'))
+       ||(heading==='Failures needing attention'&&alerts.length))folded.open=true;
+  }
   if(myLink){$('#copyMyTote').onclick=e=>copyText(myLink,e.currentTarget);renderQr($('#myToteQr'),myLink)}
   if($('#copyClubTote')){$('#copyClubTote').onclick=e=>copyText(clubLink,e.currentTarget);renderQr($('#clubToteQr'),clubLink)}
   $('#content').querySelectorAll('[data-bank-confirm]').forEach(b=>b.onclick=async()=>{
