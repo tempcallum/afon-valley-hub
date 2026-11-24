@@ -1610,12 +1610,50 @@ async function tote(){
     '<div class="panel"><div class="head"><div><span class="eyebrow dark">LOTTERY RETURNS</span><h3>Draw finance history</h3><p class="muted">The CSV is a working export, not a completed statutory return. Before submitting to Newport City Council, include expenses and their funding, and obtain signatures from two members appointed in writing. Returns are due within three months of each draw.</p></div><button id="downloadToteReturns" class="btn">Download CSV</button></div><div class="list">'+(drawHistory.length?drawHistory.slice(0,12).map(h=>'<div class="row"><span><strong>Draw '+h.draw_number+' · '+day(h.draw_at)+'</strong><br><small class="muted">Sales '+cash(h.sales_pence)+' · Weekly prize '+cash(h.weekly_prize_pence)+' · Jackpot added '+cash(h.jackpot_added_pence)+'</small></span><strong>'+cash(h.club_share_pence)+' to club</strong></div>').join(''):'<div class="empty">No completed draws yet.</div>')+'</div></div>'+
     '<div class="panel"><span class="eyebrow dark">RECENT ENTRIES</span><h3>Payment status</h3><div class="list">'+(orders.length?orders.map(o=>'<div class="row"><span><strong>'+esc(o.buyer_name)+'</strong><br><small class="muted">'+o.ticket_count+' entries · '+esc(o.checkout_reference||o.source)+' · '+new Date(o.created_at).toLocaleString('en-GB')+'</small></span><span class="badge '+(o.status==='paid'?'ok':['awaiting_payment','payment_claimed','pending'].includes(o.status)?'warn':'bad')+'">'+esc(o.status.replaceAll('_',' ').toUpperCase())+'</span></div>').join(''):'<div class="empty">No Tote orders yet.</div>')+'</div></div>';
 
+  // Attention counts are derived from live records, never from whether a section was opened.
+  const attentionCounts={
+    'Winner payments':payouts.filter(p=>p.status==='due').length,
+    'Failures needing attention':alerts.length
+  };
+  const paymentReviewCount=bankChecks.filter(o=>['payment_claimed','review'].includes(o.status)
+    ||(o.status==='expired'&&o.claimed_paid_at)).length;
+  const paymentPanel=[...$('#content').querySelectorAll('.panel h3')]
+    .find(el=>el.textContent.trim()==='Payments waiting for verification');
+  if(paymentPanel&&paymentReviewCount){
+    const marker=document.createElement('span');
+    marker.className='badge warn';
+    marker.textContent=String(paymentReviewCount)+' to check';
+    marker.setAttribute('aria-label',paymentReviewCount+' claimed or flagged bank payments to review');
+    paymentPanel.append(' ',marker);
+  }
   // Operational view: put rarely-used administration below a tap-to-open heading.
   // Keep payment verification, prize payments and system alerts immediately visible.
   for(const [heading,summaryText] of [
     ['Rules & direct Lloyds payment','Tote rules, Lloyds account & settings'],
     ['Draw finance history','Lottery returns & draw finances'],
     ['Payment status','Recent ticket orders']
+  ]){
+    const headingEl=[...$('#content').querySelectorAll('.panel h3')]
+      .find(el=>el.textContent.trim()===heading);
+    const section=headingEl?.closest('.panel');
+    if(!section)continue;
+    const folded=document.createElement('details');
+    folded.className='panel tote-section-disclosure';
+    const caption=document.createElement('summary');
+    caption.textContent=summaryText;
+    section.parentNode.insertBefore(folded,section);
+    section.classList.remove('panel');
+    section.classList.add('tote-section-content');
+    folded.appendChild(caption);
+    folded.appendChild(section);
+  }
+  // Keep the actionable payment checks visible; collapse optional Tote information.
+  for(const [heading,summaryText] of [
+    ['Your referral link & QR','My sales link & QR code'],
+    ['Social / main club link','Club sharing link & QR code'],
+    ['Tote sales','Sales leaderboard'],
+    ['Winner payments','Prize payments'],
+    ['Failures needing attention','System alerts']
   ]){
     const headingEl=[...$('#content').querySelectorAll('.panel h3')]
       .find(el=>el.textContent.trim()===heading);
@@ -1634,44 +1672,6 @@ async function tote(){
       marker.style.marginLeft='8px';
       caption.appendChild(marker);
     }
-    section.parentNode.insertBefore(folded,section);
-    section.classList.remove('panel');
-    section.classList.add('tote-section-content');
-    folded.appendChild(caption);
-    folded.appendChild(section);
-  }
-  // Attention counts are derived from live records, never from whether a section was opened.
-  const attentionCounts={
-    'Winner payments':payouts.filter(p=>p.status==='due').length,
-    'Failures needing attention':alerts.length
-  };
-  const paymentReviewCount=bankChecks.filter(o=>['payment_claimed','review'].includes(o.status)
-    ||(o.status==='expired'&&o.claimed_paid_at)).length;
-  const paymentPanel=[...$('#content').querySelectorAll('.panel h3')]
-    .find(el=>el.textContent.trim()==='Payments waiting for verification');
-  if(paymentPanel&&paymentReviewCount){
-    const marker=document.createElement('span');
-    marker.className='badge warn';
-    marker.textContent=String(paymentReviewCount)+' to check';
-    marker.setAttribute('aria-label',paymentReviewCount+' claimed or flagged bank payments to review');
-    paymentPanel.append(' ',marker);
-  }
-  // Keep the actionable payment checks visible; collapse optional Tote information.
-  for(const [heading,summaryText] of [
-    ['Your referral link & QR','My sales link & QR code'],
-    ['Social / main club link','Club sharing link & QR code'],
-    ['Tote sales','Sales leaderboard'],
-    ['Winner payments','Prize payments'],
-    ['Failures needing attention','System alerts']
-  ]){
-    const headingEl=[...$('#content').querySelectorAll('.panel h3')]
-      .find(el=>el.textContent.trim()===heading);
-    const section=headingEl?.closest('.panel');
-    if(!section)continue;
-    const folded=document.createElement('details');
-    folded.className='panel tote-section-disclosure';
-    const caption=document.createElement('summary');
-    caption.textContent=summaryText;
     section.parentNode.insertBefore(folded,section);
     section.classList.remove('panel');
     section.classList.add('tote-section-content');
